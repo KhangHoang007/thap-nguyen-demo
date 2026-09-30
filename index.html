@@ -1214,6 +1214,11 @@ if(IS_TOUCH){
 cv.style.touchAction='none';
 cv.addEventListener('touchstart',function(e){e.preventDefault();
   for(const t of e.changedTouches){const pp=touchPos(t);lastTouchAtk=playTime;
+    if(tutOpen){
+      // Bang chao mung tan thu ve tren canvas (che ca nut cam ung): uu tien nut BAT DAU CHOI
+      for(const b of buttons){if(pp.x>=b.x&&pp.x<=b.x+b.w&&pp.y>=b.y&&pp.y<=b.y+b.h){try{b.fn();}catch(err){}break;}}
+      continue;
+    }
     if(mode!=='play'&&mode!=='lobby'){
       // Man hinh menu (title/chon toc/thang/thua/thuc tinh/huong dan): nut ve tren canvas
       const m0=mode;
