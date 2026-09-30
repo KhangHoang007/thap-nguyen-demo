@@ -849,6 +849,19 @@ function queueCloudSave(){
     refreshCloudIcon();
   },2500);
 }
+// Day ban luu len dam may ngay khi tab bi an hoac dong — tranh mat luot day cuoi (hay gap tren mobile)
+function cloudFlushSync(){
+  try{
+    if(!curUser||!ACCS[curUser]||!mqClient||!cloudDirty)return;
+    cloudDirty=false;
+    mqClient.publish(cloudTopic(curUser),JSON.stringify({pw:ACCS[curUser].pw,save:SAVE,updatedAt:Date.now()}),true);
+    cloudState='ok';refreshCloudIcon();
+  }catch(e){cloudState='error';refreshCloudIcon();}
+}
+if(typeof window!=='undefined'&&window.addEventListener){
+  window.addEventListener('pagehide',cloudFlushSync);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')cloudFlushSync();});
+}
 function blankSave(name){return {name:name,bestFloor:1,bestKills:0,totalKills:0,wins:0,plays:0,lastRace:0,gear:null,quest:{kills:0,maxFloor:1,boss:false,gold:0,items:0,elites:0,trades:0},claimed:{},tut:false,awk:null,checkpoint:null,daily:null,hourly:null,dailyHist:[],potions:{hp:0,en:0,rage:0,swift:0,stone:0,regen:0}};}
 // ============ TAI KHOAN ADMIN (test nhanh) ============
 const ADMIN_USER='admin',ADMIN_PW='thapnguyen999';
@@ -872,7 +885,7 @@ function topUpAdmin(s){
   s.gacha={tickets:99,pity:{kiem:0,giap:0,cung:0,ngto:0},total:0};
   for(const k of ['hp','en','rage','swift','stone','regen'])s.potions[k]=99;
 }
-function persist(){if(curUser&&ACCS[curUser]){ACCS[curUser].save=SAVE;persistAccs();}if(curUser){cloudDirty=true;queueCloudSave();}}
+function persist(){if(curUser&&ACCS[curUser]){ACCS[curUser].save=SAVE;ACCS[curUser].updatedAt=Date.now();persistAccs();}if(curUser){cloudDirty=true;queueCloudSave();}}
 function saveGear(){
   if(!P||!curUser||!ACCS[curUser])return;
   SAVE.gear={gold:P.gold,inv:JSON.parse(JSON.stringify(P.inv)),
@@ -943,16 +956,23 @@ async function cloudAuth(u,p,pwHash,isReg){
       if(rec&&rec.save){cloudState='ok';refreshCloudIcon();accErr('Tên này đã có người dùng rồi');return;}
       const sv=blankSave(u);
       await cloudPut(u,{pw:pwHash,save:sv,updatedAt:Date.now()});
-      ACCS[u]={pw:pwHash,save:sv};persistAccs();
+      ACCS[u]={pw:pwHash,save:sv,updatedAt:Date.now()};persistAccs();
       cloudState='ok';refreshCloudIcon();accErr('');finishLogin(u);
     }else{
       if(rec&&rec.save){
         if(rec.pw!==pwHash&&rec.pw!==hashPw(u+'|'+p)&&rec.pw!==hashPw(p)){cloudState='ok';refreshCloudIcon();accErr('Sai mật khẩu rồi');return;}
-        rec.save.name=u;ACCS[u]={pw:rec.pw,save:rec.save};persistAccs();
-        cloudState='ok';refreshCloudIcon();accErr('');finishLogin(u);
+        var localRec=ACCS[u],cloudT=rec.updatedAt||0,localT=(localRec&&localRec.updatedAt)||0;
+        var localPwOk=!!localRec&&(localRec.pw===pwHash||localRec.pw===hashPw(u+'|'+p)||localRec.pw===hashPw(p));
+        if(localPwOk&&localT>cloudT){
+          try{await cloudPut(u,{pw:localRec.pw,save:localRec.save,updatedAt:localT});}catch(e){}
+          cloudState='ok';refreshCloudIcon();accErr('');finishLogin(u);
+        }else{
+          rec.save.name=u;ACCS[u]={pw:rec.pw,save:rec.save,updatedAt:rec.updatedAt||Date.now()};persistAccs();
+          cloudState='ok';refreshCloudIcon();accErr('');finishLogin(u);
+        }
       }else if(ACCS[u]&&(ACCS[u].pw===pwHash||ACCS[u].pw===hashPw(u+'|'+p)||ACCS[u].pw===hashPw(p))){
         await cloudPut(u,{pw:pwHash,save:ACCS[u].save,updatedAt:Date.now()});
-        ACCS[u].pw=pwHash;persistAccs();
+        ACCS[u].pw=pwHash;ACCS[u].updatedAt=Date.now();persistAccs();
         cloudState='ok';refreshCloudIcon();accErr('☁️ Đã đưa tài khoản cũ lên đám mây');finishLogin(u);
       }else{cloudState='ok';refreshCloudIcon();accErr('Chưa có tài khoản này — qua tab Đăng ký');}
     }
