@@ -23,10 +23,11 @@ const cv=document.getElementById('cv'),ctx=ctx2d= cv.getContext('2d');
 const W=960,H=600;
 const IS_TOUCH=('ontouchstart'in window)||navigator.maxTouchPoints>0;
 // ---- assets ----
-const bg=new Image();bg.src='concept/bg-lobby.webp';
+const bg=new Image();bg.src='concept/bg-lobby.jpg';
 const heroImg=new Image();heroImg.src='concept/hero-kai.png';
 // ---- state ----
-const hero={x:480,y:480,vx:0,vy:0,face:1,slash:0};
+const hero={x:480,y:480,vx:0,vy:0,face:1,slash:0,walk:0,moving:false};
+const dust=[];
 const npcs=[
   {x:150,y:380,name:'Thợ Rèn',color:'#ff8a5a',say:'Cần rèn vũ khí không, hiệp sĩ?'},
   {x:380,y:430,name:'Nhà Buôn',color:'#ffd75a',say:'Hàng mới về, giá hữu nghị!'},
@@ -97,6 +98,12 @@ function update(dt){
   }
   hero.x=Math.max(40,Math.min(W-40,hero.x));
   hero.y=Math.max(120,Math.min(H-40,hero.y));
+  hero.moving=l>0.1;
+  if(hero.moving){
+    hero.walk+=dt*11;
+    if(Math.random()<dt*9)dust.push({x:hero.x+(Math.random()-0.5)*22,y:hero.y+24,t:0.45});
+  }
+  for(let i=dust.length-1;i>=0;i--){const d=dust[i];d.t-=dt;d.y-=18*dt;if(d.t<=0)dust.splice(i,1);}
   if(hero.slash>0)hero.slash-=dt;
   if(talkT>0)talkT-=dt;
   nearNpc=null;
@@ -125,11 +132,17 @@ function draw(){
       ctx.fillText(IS_TOUCH?'Chạm F để nói chuyện':'Bấm F để nói chuyện',n.x,n.y-42);
     }
   }
-  // hero
+  // hero (walk animation: nay len xuong + nghieng + bop meo khi di chuyen)
   const hw=64,hh=64*(418/407);
+  const bob=hero.moving?Math.sin(hero.walk)*3.5:0;
+  const tilt=hero.moving?Math.sin(hero.walk)*0.07:0;
+  const sq=hero.moving?1+Math.sin(hero.walk*2)*0.03:1;
   ctx.fillStyle='rgba(0,0,0,0.4)';
   ctx.beginPath();ctx.ellipse(hero.x,hero.y+26,22,8,0,0,7);ctx.fill();
-  ctx.save();ctx.translate(hero.x,hero.y-6);ctx.scale(hero.face,1);
+  for(const d of dust){ctx.globalAlpha=Math.max(0,d.t/0.45)*0.5;ctx.fillStyle='#d8cfae';
+    ctx.beginPath();ctx.arc(d.x,d.y,5*(1-d.t/0.45)+2,0,7);ctx.fill();}
+  ctx.globalAlpha=1;
+  ctx.save();ctx.translate(hero.x,hero.y-6+bob);ctx.rotate(tilt);ctx.scale(hero.face,sq);
   if(heroImg.complete&&heroImg.naturalWidth)
     ctx.drawImage(heroImg,-hw/2,-hh/2-14,hw,hh);
   else{ctx.fillStyle='#e0524d';ctx.fillRect(-16,-40,32,56);}
