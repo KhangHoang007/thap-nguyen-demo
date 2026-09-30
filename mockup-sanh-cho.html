@@ -28,6 +28,17 @@ const heroImg=new Image();heroImg.src='concept/hero-kai.png';
 // ---- state ----
 const hero={x:480,y:480,vx:0,vy:0,face:1,slash:0,walk:0,moving:false};
 const dust=[];
+// vat can: sap hang, nha, khoi thap (chua loi cong thap)
+const obstacles=[
+  {x:340,y:420,w:200,h:130}, // sap Nha Buon (giua)
+  {x:150,y:385,w:115,h:100}, // sap ben trai
+  {x:405,y:415,w:115,h:105}, // sap ben phai
+  {x:0,y:100,w:216,h:240},   // nha trai
+  {x:751,y:100,w:209,h:240}, // nha phai
+  {x:387,y:0,w:59,h:336},    // thap: trai cong
+  {x:565,y:0,w:60,h:336},    // thap: phai cong
+  {x:446,y:0,w:119,h:150},   // thap: tren vom cong
+];
 const npcs=[
   {x:150,y:380,name:'Thợ Rèn',color:'#ff8a5a',say:'Cần rèn vũ khí không, hiệp sĩ?'},
   {x:380,y:430,name:'Nhà Buôn',color:'#ffd75a',say:'Hàng mới về, giá hữu nghị!'},
@@ -98,6 +109,17 @@ function update(dt){
   }
   hero.x=Math.max(40,Math.min(W-40,hero.x));
   hero.y=Math.max(120,Math.min(H-40,hero.y));
+  // va cham vat can: day hero ra canh gan nhat
+  for(const o of obstacles){
+    const m=14,t=8;
+    if(hero.x>o.x-m&&hero.x<o.x+o.w+m&&hero.y>o.y-t&&hero.y<o.y+o.h+t){
+      const dxl=hero.x-(o.x-m),dxr=(o.x+o.w+m)-hero.x;
+      const dyt=hero.y-(o.y-t),dyb=(o.y+o.h+t)-hero.y;
+      const mn=Math.min(dxl,dxr,dyt,dyb);
+      if(mn===dxl)hero.x=o.x-m;else if(mn===dxr)hero.x=o.x+o.w+m;
+      else if(mn===dyt)hero.y=o.y-t;else hero.y=o.y+o.h+t;
+    }
+  }
   hero.moving=l>0.1;
   if(hero.moving){
     hero.walk+=dt*11;
