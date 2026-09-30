@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>Làng Chân Tháp - Mockup Sảnh Chờ</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#0d0f18;overflow:hidden;font-family:Arial,sans-serif;
+    touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0d0f18}
+  canvas{max-width:100vw;max-height:92vh;width:auto;height:auto;display:block;border-radius:6px;
+    box-shadow:0 0 40px rgba(0,0,0,.7);touch-action:none}
+  #note{position:fixed;top:6px;left:0;right:0;text-align:center;color:#e8c15a;font-size:13px;
+    pointer-events:none;text-shadow:0 1px 3px #000;z-index:5}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="cv" width="960" height="600"></canvas></div>
+<div id="note">MOCKUP SẢNH CHỜ — phong cách Top Heroes (bản duyệt, chưa phải game thật)</div>
+<script>
+const cv=document.getElementById('cv'),ctx=ctx2d= cv.getContext('2d');
+const W=960,H=600;
+const IS_TOUCH=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+// ---- assets ----
+const bg=new Image();bg.src='concept/bg-lobby.webp';
+const heroImg=new Image();heroImg.src='concept/hero-kai.png';
+// ---- state ----
+const hero={x:480,y:480,vx:0,vy:0,face:1,slash:0};
+const npcs=[
+  {x:150,y:380,name:'Thợ Rèn',color:'#ff8a5a',say:'Cần rèn vũ khí không, hiệp sĩ?'},
+  {x:380,y:430,name:'Nhà Buôn',color:'#ffd75a',say:'Hàng mới về, giá hữu nghị!'},
+  {x:560,y:430,name:'Thầy Thuốc',color:'#5aff8a',say:'Thuốc hồi máu, mua 2 tặng 1!'},
+  {x:480,y:170,name:'Cổng Tháp',color:'#7ab8ff',say:'Vào tháp khi ngươi sẵn sàng...'},
+];
+let nearNpc=null,talkMsg='',talkT=0;
+const keys={};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;
+  if(e.key.toLowerCase()==='f')pressF();});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+// ---- touch: joystick + buttons ----
+const joy={active:false,id:null,cx:0,cy:0,dx:0,dy:0};
+const BTNS=[
+  {id:'atk',x:W-80,y:H-100,r:46,label:'ĐÁNH',color:'#a33'},
+  {id:'q',x:W-190,y:H-60,r:34,label:'Q',color:'#37a'},
+  {id:'e',x:W-80,y:H-200,r:34,label:'E',color:'#3a7'},
+  {id:'f',x:W-280,y:H-80,r:30,label:'F',color:'#a86'},
+  {id:'bag',x:W-60,y:60,r:28,label:'TÚI',color:'#666'},
+];
+function tpos(t){const r=cv.getBoundingClientRect();
+  return{x:(t.clientX-r.left)*W/r.width,y:(t.clientY-r.top)*H/r.height};}
+function dist(x1,y1,x2,y2){return Math.hypot(x1-x2,y1-y2);}
+cv.addEventListener('touchstart',e=>{e.preventDefault();
+  for(const t of e.changedTouches){const p=tpos(t);
+    let hit=false;
+    for(const b of BTNS)if(dist(p.x,p.y,b.x,b.y)<b.r+28){hit=true;pressBtn(b.id);break;}
+    if(!hit&&p.x<W*0.42&&p.y>H*0.5&&!joy.active){
+      joy.active=true;joy.id=t.identifier;joy.cx=p.x;joy.cy=p.y;joy.dx=0;joy.dy=0;}
+  }},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();
+  for(const t of e.changedTouches)if(joy.active&&t.identifier===joy.id){
+    const p=tpos(t);let dx=p.x-joy.cx,dy=p.y-joy.cy;
+    const d=Math.hypot(dx,dy),m=70;
+    if(d>m){dx=dx/d*m;dy=dy/d*m;}
+    joy.dx=dx/m;joy.dy=dy/m;
+  }},{passive:false});
+function endT(e){for(const t of e.changedTouches)
+  if(joy.active&&t.identifier===joy.id){joy.active=false;joy.dx=0;joy.dy=0;}}
+cv.addEventListener('touchend',endT);cv.addEventListener('touchcancel',endT);
+function pressBtn(id){
+  if(id==='atk'){hero.slash=0.18;beep(300,0.08);}
+  else if(id==='f')pressF();
+  else beep(500,0.06);
+}
+function pressF(){
+  if(nearNpc){talkMsg=nearNpc.name+': "'+nearNpc.say+'"';talkT=3;beep(600,0.1);}
+}
+let AC=null;
+function beep(f,d){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.frequency.value=f;o.type='square';g.gain.value=0.06;
+  o.connect(g);g.connect(AC.destination);o.start();
+  g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+d);
+  o.stop(AC.currentTime+d);}catch(e){}}
+// ---- update ----
+function update(dt){
+  let mx=0,my=0;
+  if(keys['w']||keys['arrowup'])my-=1;
+  if(keys['s']||keys['arrowdown'])my+=1;
+  if(keys['a']||keys['arrowleft'])mx-=1;
+  if(keys['d']||keys['arrowright'])mx+=1;
+  if(joy.active){mx+=joy.dx;my+=joy.dy;}
+  const sp=220,l=Math.hypot(mx,my);
+  if(l>0.1){mx/=Math.max(1,l);my/=Math.max(1,l);
+    hero.x+=mx*sp*dt;hero.y+=my*sp*dt;
+    if(Math.abs(mx)>0.2)hero.face=mx>0?1:-1;
+  }
+  hero.x=Math.max(40,Math.min(W-40,hero.x));
+  hero.y=Math.max(120,Math.min(H-40,hero.y));
+  if(hero.slash>0)hero.slash-=dt;
+  if(talkT>0)talkT-=dt;
+  nearNpc=null;
+  for(const n of npcs)if(dist(hero.x,hero.y,n.x,n.y)<90){nearNpc=n;break;}
+}
+// ---- draw ----
+function draw(){
+  // nen
+  if(bg.complete&&bg.naturalWidth){
+    const s=Math.max(W/bg.naturalWidth,H/bg.naturalHeight);
+    const dw=bg.naturalWidth*s,dh=bg.naturalHeight*s;
+    ctx.drawImage(bg,(W-dw)/2,(H-dh)/2,dw,dh);
+  }else{ctx.fillStyle='#1a2030';ctx.fillRect(0,0,W,H);}
+  ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(0,0,W,H);
+  // NPC
+  ctx.textAlign='center';
+  for(const n of npcs){
+    ctx.fillStyle='rgba(0,0,0,0.45)';
+    ctx.beginPath();ctx.ellipse(n.x,n.y+16,20,7,0,0,7);ctx.fill();
+    ctx.fillStyle=n.color;
+    ctx.beginPath();ctx.arc(n.x,n.y,16,0,7);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 13px Arial';
+    ctx.fillText(n.name,n.x,n.y-24);
+    if(n===nearNpc){
+      ctx.fillStyle='#ffe27a';ctx.font='bold 13px Arial';
+      ctx.fillText(IS_TOUCH?'Chạm F để nói chuyện':'Bấm F để nói chuyện',n.x,n.y-42);
+    }
+  }
+  // hero
+  const hw=64,hh=64*(418/407);
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath();ctx.ellipse(hero.x,hero.y+26,22,8,0,0,7);ctx.fill();
+  ctx.save();ctx.translate(hero.x,hero.y-6);ctx.scale(hero.face,1);
+  if(heroImg.complete&&heroImg.naturalWidth)
+    ctx.drawImage(heroImg,-hw/2,-hh/2-14,hw,hh);
+  else{ctx.fillStyle='#e0524d';ctx.fillRect(-16,-40,32,56);}
+  ctx.restore();
+  // vet chem
+  if(hero.slash>0){
+    ctx.strokeStyle='rgba(255,255,255,'+(hero.slash/0.18)+')';
+    ctx.lineWidth=6;ctx.beginPath();
+    const a=-0.6+ (0.18-hero.slash)*8;
+    ctx.arc(hero.x+hero.face*30,hero.y-10,44,a-0.7,a+0.7);ctx.stroke();
+  }
+  // HUD tren
+  ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(0,0,W,44);
+  ctx.textAlign='left';ctx.fillStyle='#e8c15a';ctx.font='bold 17px Arial';
+  ctx.fillText('LÀNG CHÂN THÁP',14,28);
+  // HP/MP
+  ctx.fillStyle='#400';ctx.fillRect(220,10,180,12);
+  ctx.fillStyle='#e0524d';ctx.fillRect(220,10,180,12);
+  ctx.fillStyle='#024';ctx.fillRect(220,26,180,8);
+  ctx.fillStyle='#3c9ae0';ctx.fillRect(220,26,180,8);
+  ctx.fillStyle='#ffd75a';ctx.font='bold 15px Arial';ctx.textAlign='right';
+  ctx.fillText('1.250 vàng',W-14,28);ctx.textAlign='left';
+  // thoai NPC
+  if(talkT>0){
+    ctx.fillStyle='rgba(10,12,20,0.92)';
+    const tw=560;ctx.fillRect(W/2-tw/2,H-140,tw,64);
+    ctx.strokeStyle='#e8c15a';ctx.lineWidth=2;
+    ctx.strokeRect(W/2-tw/2,H-140,tw,64);
+    ctx.fillStyle='#fff';ctx.font='15px Arial';ctx.textAlign='center';
+    ctx.fillText(talkMsg,W/2,H-114);ctx.textAlign='left';
+  }
+  // nut cam ung
+  if(IS_TOUCH){
+    if(joy.active){
+      ctx.globalAlpha=0.35;ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.arc(joy.cx,joy.cy,52,0,7);ctx.fill();
+      ctx.globalAlpha=0.6;
+      ctx.beginPath();ctx.arc(joy.cx+joy.dx*52,joy.cy+joy.dy*52,24,0,7);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    for(const b of BTNS){
+      ctx.globalAlpha=0.55;ctx.fillStyle=b.color;
+      ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();
+      ctx.globalAlpha=0.9;ctx.strokeStyle='#fff';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.stroke();
+      ctx.fillStyle='#fff';ctx.font='bold 14px Arial';ctx.textAlign='center';
+      ctx.fillText(b.label,b.x,b.y+5);ctx.textAlign='left';ctx.globalAlpha=1;
+    }
+  }else{
+    ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(10,H-34,460,24);
+    ctx.fillStyle='#cfd6ea';ctx.font='13px Arial';
+    ctx.fillText('WASD di chuyển • F nói chuyện • Mở bằng điện thoại để thử joystick',18,H-17);
+  }
+}
+let last=performance.now();
+function loop(t){const dt=Math.min(0.05,(t-last)/1000);last=t;update(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
