@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Tháp Nguyền - Bản Demo</title>
 <style>
   body{margin:0;background:#0b0d14;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:#c9cddc}
@@ -1207,8 +1207,18 @@ if(IS_TOUCH){
 cv.style.touchAction='none';
 cv.addEventListener('touchstart',function(e){e.preventDefault();
   for(const t of e.changedTouches){const pp=touchPos(t);lastTouchAtk=playTime;
+    if(mode!=='play'&&mode!=='lobby'){
+      // Man hinh menu (title/chon toc/thang/thua/thuc tinh/huong dan): nut ve tren canvas
+      const m0=mode;
+      for(const b of buttons){if(pp.x>=b.x&&pp.x<=b.x+b.w&&pp.y>=b.y&&pp.y<=b.y+b.h){try{b.fn();}catch(err){}break;}}
+      if(m0==='select'){
+        for(let i=0;i<9;i++){const bx=60+(i%3)*280,by=90+Math.floor(i/3)*118;
+          if(pp.x>=bx&&pp.x<=bx+260&&pp.y>=by&&pp.y<=by+104){selRace=i;beep(600,0.08);break;}}
+      }
+      continue;
+    }
     let onBtn=false;
-    if(mode==='play'||mode==='lobby')for(const b of TOUCH_BTNS){
+    for(const b of TOUCH_BTNS){
       if(dist(pp.x,pp.y,b.x,b.y)<b.r+10){onBtn=true;touchBtn(b.id);break;}}
     if(!onBtn&&pp.x<W*0.42&&pp.y>H*0.5&&!joy.active){
       joy.active=true;joy.id=t.identifier;joy.cx=pp.x;joy.cy=pp.y;joy.dx=0;joy.dy=0;}
@@ -1252,8 +1262,8 @@ function handleClick(x,y){
   for(const b of buttons){if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h){b.fn();return;}}
   if(mode==='title')mode='select';
   else if(mode==='select'){
-    for(let i=0;i<9;i++){const bx=60+(i%3)*280,by=120+Math.floor(i/3)*130;
-      if(x>=bx&&x<=bx+260&&y>=by&&y<=by+110){selRace=i;beep(600,0.08);return;}}
+    for(let i=0;i<9;i++){const bx=60+(i%3)*280,by=90+Math.floor(i/3)*118;
+      if(x>=bx&&x<=bx+260&&y>=by&&y<=by+104){selRace=i;beep(600,0.08);return;}}
   }
   else if(mode==='play'&&P){if(!(IS_TOUCH&&playTime-lastTouchAtk<0.6))basicAttack();}
 }
