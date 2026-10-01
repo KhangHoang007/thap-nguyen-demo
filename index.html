@@ -35,6 +35,8 @@
   #accUser,#accPass{background:#0b0d14;border:1px solid #3a4058;color:#fff;font-size:16px;padding:10px 14px;border-radius:6px;width:240px;text-align:center;outline:none;display:block;margin:8px auto}
   #accUser,#accPass{transition:border-color 0.2s,box-shadow 0.2s}
   #accUser:focus,#accPass:focus{border-color:#e8c15a;box-shadow:0 0 14px rgba(232,193,90,0.35)}
+  .rememberRow{display:block;margin:8px auto 0;color:#b9c0d4;font-size:13px;cursor:pointer;user-select:none}
+  .rememberRow input{accent-color:#e8c15a;margin-right:6px;vertical-align:-1px}
   #loginBtn{display:block;margin:16px auto 0;background:linear-gradient(135deg,#f5d47a 0%,#e8a83a 55%,#c97f1a 100%);color:#231806;font-weight:900;font-size:16px;border:none;border-radius:10px;padding:13px 44px;cursor:pointer;letter-spacing:3px;box-shadow:0 4px 18px rgba(232,168,58,0.45),inset 0 1px 0 rgba(255,255,255,0.5);transition:transform 0.15s,box-shadow 0.15s;position:relative;overflow:hidden}
   #loginBtn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 28px rgba(232,168,58,0.7),inset 0 1px 0 rgba(255,255,255,0.5)}
   #loginBtn:active{transform:translateY(1px)}
@@ -277,6 +279,7 @@
       </div>
       <input id="accUser" maxlength="16" placeholder="Tên tài khoản">
       <input id="accPass" type="password" maxlength="32" placeholder="Mật khẩu">
+      <label class="rememberRow"><input type="checkbox" id="rememberMe"> &#128190; Ghi nhớ đăng nhập</label>
       <p id="accErr"></p>
       <p id="saveHint"></p>
       <button id="loginBtn">VÀO THÁP</button>
@@ -1131,6 +1134,7 @@ function refreshUserBar(){
 function doAuth(){
   const u=document.getElementById('accUser').value.trim();
   const p=document.getElementById('accPass').value;
+  window.__rememberMe=!!(document.getElementById('rememberMe')&&document.getElementById('rememberMe').checked);
   if(u.length<3){accErr('Tên tài khoản ít nhất 3 ký tự');return;}
   if(p.length<4){accErr('Mật khẩu ít nhất 4 ký tự');return;}
   accErr('');beep(660,0.08);musicStart(4);
@@ -1197,6 +1201,11 @@ function finishLogin(u){
   curUser=u;SAVE=ACCS[u].save;if(!SAVE.quest)SAVE.quest={kills:0,maxFloor:1,boss:false,gold:0};if(!SAVE.claimed)SAVE.claimed={};if(!SAVE.potions)SAVE.potions={hp:0,en:0,rage:0,swift:0,stone:0,regen:0};
   if(SAVE.quest.items==null)SAVE.quest.items=0;if(SAVE.quest.elites==null)SAVE.quest.elites=0;if(SAVE.quest.trades==null)SAVE.quest.trades=0;
   try{localStorage.setItem('thapNguyenLastUser',u);}catch(e){}
+  try{
+    if(window.__rememberMe){
+      localStorage.setItem('thapNguyenRemember',JSON.stringify({u:u,p:btoa(unescape(encodeURIComponent(document.getElementById('accPass').value)))}));
+    }else{localStorage.removeItem('thapNguyenRemember');}
+  }catch(e){}
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('userBar').style.display='flex';
   refreshUserBar();refreshCloudIcon();mode='title';beep(660,0.12);
@@ -1232,9 +1241,21 @@ function importSaveFile(f){
   };
   rd.readAsText(f);
 }
+function fillRemembered(){
+  try{
+    const rm=localStorage.getItem('thapNguyenRemember');
+    if(rm){const r=JSON.parse(rm);
+      if(r&&r.u){document.getElementById('accUser').value=r.u;
+        if(r.p)document.getElementById('accPass').value=decodeURIComponent(escape(atob(r.p)));
+        const cb=document.getElementById('rememberMe');if(cb)cb.checked=true;
+        return true;}}
+  }catch(e){}
+  return false;
+}
 (function(){refreshSaveHint();
-  try{const lu=localStorage.getItem('thapNguyenLastUser');
-    if(lu&&ACCS[lu])document.getElementById('accUser').value=lu;}catch(e){}
+  try{if(!fillRemembered()){
+    const lu=localStorage.getItem('thapNguyenLastUser');
+    if(lu&&ACCS[lu])document.getElementById('accUser').value=lu;}}catch(e){}
 })();
 document.getElementById('tabLogin').addEventListener('click',function(){setTab(false);});
 document.getElementById('tabReg').addEventListener('click',function(){setTab(true);});
@@ -1249,6 +1270,7 @@ loadSettings();
 document.getElementById('logoutBtn').addEventListener('click',function(){
   curUser=null;SAVE=blankSave('');
   document.getElementById('accPass').value='';accErr('');
+  fillRemembered();
   document.getElementById('loginWrap').style.display='flex';
   document.getElementById('userBar').style.display='none';
   mode='login';
@@ -5511,6 +5533,7 @@ buildIcons();
 
 requestAnimationFrame(loop);
 try{document.getElementById('congratsBtn').onclick=function(){document.getElementById('congratsWrap').classList.remove('show');};}catch(e){}
+
 
 </script>
 <div id="congratsWrap">
