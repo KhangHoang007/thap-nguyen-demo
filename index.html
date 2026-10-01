@@ -218,6 +218,19 @@
 .gtense{filter:brightness(.5) saturate(1.5)}
 .gtense::after{content:'\203C';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;z-index:5;pointer-events:none;animation:gtenseP .45s ease-in-out infinite alternate}
 @keyframes gtenseP{from{transform:scale(.8);opacity:.55}to{transform:scale(1.18);opacity:1}}
+
+/* FIX MOBILE NGANG: co gon header de canvas vua khit man hinh, khong cuon trang */
+@media (orientation:landscape) and (max-height:520px){
+  body{justify-content:flex-start;min-height:100dvh}
+  body>h2{display:none}
+  #userBar{gap:8px;font-size:12px;margin:2px 0;flex-wrap:wrap}
+  #userBar #logoutBtn{padding:3px 8px;font-size:11px}
+  #userBar button{padding:3px 8px !important;font-size:11px !important}
+  canvas{max-height:calc(100dvh - 38px);max-width:100vw}
+  .hint{display:none}
+  #npcPanel .panel{max-height:94dvh;padding:14px 16px}
+  #itemDetailBox{max-height:94dvh}
+}
 </style>
 <!-- Nhac nen: Kevin MacLeod (incompetech.com) - CC BY 4.0: 'Village Consort' (lang), 'Crypto' + 'Dangerous' (ham nguc), 'Five Armies' (boss) -->
 </head>
