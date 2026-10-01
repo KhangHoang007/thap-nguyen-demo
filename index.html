@@ -139,8 +139,31 @@
 .gcard .gname{font-size:12px;font-weight:700;line-height:1.35;min-height:32px}
 .gcard .gsub{font-size:11px;color:#8a8fa3}
 .gcard.ghidden{opacity:0;transform:scale(0.3) rotateY(90deg);pointer-events:none}
-.gcard.gshow{animation:gpop 0.45s cubic-bezier(0.2,1.6,0.4,1) forwards}
-@keyframes gpop{0%{opacity:0;transform:scale(0.3) rotateY(90deg)}55%{opacity:1;transform:scale(1.14) rotateY(0)}100%{opacity:1;transform:scale(1) rotateY(0)}}
+.gcard.gshow{animation:gpop2 0.5s cubic-bezier(0.2,1.5,0.35,1) forwards}
+@keyframes gpop2{0%{opacity:0;transform:scale(0.2) rotateY(100deg)}55%{opacity:1;transform:scale(1.35) rotateY(0)}75%{transform:scale(0.94)}100%{opacity:1;transform:scale(1) rotateY(0)}}
+.gcard .grays{position:absolute;left:50%;top:42%;width:220px;height:220px;margin:-110px 0 0 -110px;border-radius:50%;background:repeating-conic-gradient(rgba(255,255,255,0.16) 0 9deg,transparent 9deg 26deg);opacity:0;pointer-events:none}
+.gcard[data-rar="purple"] .grays,.gcard[data-rar="orange"] .grays{opacity:1;animation:gspin 4s linear infinite}
+@keyframes gspin{to{transform:rotate(360deg)}}
+.gcard .gring{position:absolute;left:50%;top:42%;width:12px;height:12px;margin:-6px 0 0 -6px;border:3px solid #fff;border-radius:50%;opacity:0;pointer-events:none}
+.gcard.gshow .gring{animation:gring 0.65s ease-out}
+@keyframes gring{0%{opacity:0.95;width:12px;height:12px;margin:-6px 0 0 -6px}100%{opacity:0;width:110px;height:110px;margin:-55px 0 0 -55px}}
+.gcard .gsparks{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.gspark{position:absolute;left:50%;top:42%;width:7px;height:7px;margin:-3px 0 0 -3px;border-radius:50%;box-shadow:0 0 8px rgba(255,255,255,0.8);animation:gspark 0.75s ease-out forwards}
+@keyframes gspark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0.3)}}
+/* Man hinh dien anh khi ra do CAM */
+#gachaCine{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(20,8,0,0.55),rgba(0,0,0,0.88));opacity:0;transition:opacity 0.35s;pointer-events:none}
+#gachaCine.show{opacity:1}
+#gachaCine.hide{opacity:0}
+#gachaCine .gc-rays{position:absolute;width:900px;height:900px;border-radius:50%;background:repeating-conic-gradient(rgba(255,170,60,0.22) 0 7deg,transparent 7deg 20deg);animation:gspin 7s linear infinite;pointer-events:none}
+#gachaCine .gc-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#gachaCine.show .gc-flash{animation:gcflash 0.7s ease-out}
+@keyframes gcflash{0%{opacity:0.85}100%{opacity:0}}
+#gachaCine .gc-core{position:relative;text-align:center;transform:scale(0.4);opacity:0}
+#gachaCine.show .gc-core{animation:gccore 0.6s cubic-bezier(0.2,1.6,0.35,1) 0.15s forwards}
+@keyframes gccore{to{transform:scale(1);opacity:1}}
+#gachaCine .gc-core img{width:210px;height:210px;object-fit:contain;filter:drop-shadow(0 0 34px rgba(255,154,42,0.9));animation:floatY 2.4s ease-in-out infinite}
+#gachaCine .gc-title{font-size:34px;font-weight:900;letter-spacing:4px;background:linear-gradient(90deg,#fff3c4,#ff9a2a,#fff3c4);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 1.8s linear infinite;margin-top:10px}
+#gachaCine .gc-name{font-size:22px;font-weight:800;color:#ffd76a;margin-top:6px;text-shadow:0 0 16px rgba(255,154,42,0.7)}
 .gcard .gshine{position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.38),transparent);transform:skewX(-20deg);pointer-events:none}
 .gcard.gshow .gshine{animation:gshine 0.9s ease 0.1s}
 @keyframes gshine{to{left:135%}}
@@ -2412,7 +2435,7 @@ function gachaFinish(n){
     const p=pulls[i];
     const img=weaponImgURL({name:p.it.name,elem:p.it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true});
     const pic=img?'<img class="gimg" src="'+img+'" alt="">':'<div class="gnoimg">\u{1F381}</div>';
-    rh+='<div class="gcard ghidden" data-rar="'+p.rar+'" style="border-color:'+RAR_COL[p.rar]+'"><div class="gshine"></div>'+pic
+    rh+='<div class="gcard ghidden" data-rar="'+p.rar+'" style="border-color:'+RAR_COL[p.rar]+'"><div class="grays"></div><div class="gring" style="border-color:'+RAR_COL[p.rar]+'"></div><div class="gsparks"></div><div class="gshine"></div>'+pic
       +'<div class="grar" style="color:'+RAR_COL[p.rar]+'">'+RAR_NAME[p.rar]+'</div>'
       +'<div class="gname" style="color:'+(p.it.color||'#fff')+'">'+p.it.name+'</div>'
       +(p.it.elem?'<div class="gsub">['+p.it.elem+']</div>':'')
@@ -2420,18 +2443,47 @@ function gachaFinish(n){
   }
   rh+='</div><div id="gachaFoot" class="sub" style="opacity:0;transition:opacity 0.6s">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
   renderGacha(rh);
+  const seq=++gachaSeq;
   const cards=document.querySelectorAll('#gachaResult .gcard');
   let idx=0;sfx('win');
-  const iv=setInterval(function(){
-    if(idx>=cards.length){clearInterval(iv);
+  function showGachaCard(c){
+    c.classList.remove('ghidden');c.classList.add('gshow');
+    const rar=c.getAttribute('data-rar');
+    if(rar!=='orange')beep(rar==='purple'?660:440,0.09);
+    const sp=c.querySelector('.gsparks');
+    if(sp){for(let k=0;k<10;k++){const s=document.createElement('span');s.className='gspark';
+      const an=Math.random()*6.283,ds=30+Math.random()*40;
+      s.style.setProperty('--dx',Math.cos(an)*ds+'px');s.style.setProperty('--dy',Math.sin(an)*ds+'px');
+      s.style.background=rar==='purple'?'#c77dff':(rar==='orange'?'#ff9a2a':'#9fd0ff');
+      sp.appendChild(s);(function(el){setTimeout(function(){el.remove();},800);})(s);}}
+  }
+  function revealNext(){
+    if(seq!==gachaSeq)return;
+    if(idx>=cards.length){
       const gf=gid('gachaFoot');if(gf)gf.style.opacity='1';
       gachaBestCongrats(pulls);return;}
-    const c=cards[idx];
-    if(c){c.classList.remove('ghidden');c.classList.add('gshow');
-      const rar=c.getAttribute('data-rar');
-      beep(rar==='orange'?880:(rar==='purple'?660:440),0.09);}
-    idx++;
-  },n>1?260:120);
+    const c=cards[idx],p=pulls[idx];
+    if(!c||!p){idx++;setTimeout(revealNext,n>1?300:150);return;}
+    if(p.rar==='orange'){gachaCine(p,function(){if(seq!==gachaSeq)return;showGachaCard(c);idx++;setTimeout(revealNext,200);});return;}
+    showGachaCard(c);idx++;
+    setTimeout(revealNext,n>1?300:150);
+  }
+  setTimeout(revealNext,150);
+}
+let gachaSeq=0;
+function gachaCine(p,done){
+  try{
+    const img=weaponImgURL({name:p.it.name,elem:p.it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true});
+    const ov=document.createElement('div');ov.id='gachaCine';
+    ov.innerHTML='<div class="gc-flash"></div><div class="gc-rays"></div><div class="gc-core">'
+      +(img?'<img src="'+img+'" alt="">':'<div style="font-size:90px">\u{1F381}</div>')
+      +'<div class="gc-title">\u{1F31F} HUY\u1EC0N THO\u1EA0I! \u{1F31F}</div>'
+      +'<div class="gc-name">'+p.it.name+'</div></div>';
+    document.body.appendChild(ov);
+    void ov.offsetWidth;ov.classList.add('show');
+    let f=440;const bi=setInterval(function(){beep(f,0.12);f*=1.22;if(f>1500)clearInterval(bi);},130);
+    setTimeout(function(){ov.classList.add('hide');setTimeout(function(){ov.remove();done();},450);},1600);
+  }catch(e){done();}
 }
 function gachaBestCongrats(pulls){
   const rank={blue:0,purple:1,orange:2};let best=pulls[0];for(const p of pulls)if(rank[p.rar]>rank[best.rar])best=p;const it=best.it;
@@ -3480,6 +3532,8 @@ function basicAttack(){
   P.atkCd=0.35;
   const a=aimAngle();P.fx=Math.cos(a);P.fy=Math.sin(a);
   P.slashFx.push({a:a,t:0.24,life:0.24,range:56,arc:1.9,color:P.race.color,big:true});
+  if(!P.rangeFx)P.rangeFx=[];
+  P.rangeFx.push({a:a,t:0.45,life:0.45,range:48,arc:1.7});
   skillBurst(a,56,P.race.color,10);
   meleeHit(a,48,1.7,pdmg(8),90);
   sfx('swing');
@@ -3617,6 +3671,7 @@ function update(dt){
   if(P.delayedSkills)for(let i=P.delayedSkills.length-1;i>=0;i--){const q2=P.delayedSkills[i];q2.t-=dt;
     if(q2.t<=0){P.delayedSkills.splice(i,1);fireSkillEffect(q2);}}
   for(let i=P.slashFx.length-1;i>=0;i--){P.slashFx[i].t-=dt;if(P.slashFx[i].t<=0)P.slashFx.splice(i,1);}
+  if(P.rangeFx)for(let i=P.rangeFx.length-1;i>=0;i--){P.rangeFx[i].t-=dt;if(P.rangeFx[i].t<=0)P.rangeFx.splice(i,1);}
   for(let i=P.shocks.length-1;i>=0;i--){P.shocks[i].t-=dt;if(P.shocks[i].t<=0)P.shocks.splice(i,1);}
   updateEnemies(dt);updateProjs(dt);updateEProjs(dt);updateFx(dt);updateItems(dt);
   nearChest=nearestChest(64);
@@ -4239,6 +4294,14 @@ function drawWorld(){
     ctx.beginPath();ctx.arc(P.x,P.y,rr,a0+0.05,a1-0.05);ctx.stroke();
     ctx.globalAlpha=pr*0.5;ctx.strokeStyle=s.color;ctx.lineWidth=3;
     ctx.beginPath();ctx.arc(P.x,P.y,rr*1.18,a0+0.15,a1-0.15);ctx.stroke();
+    ctx.globalAlpha=1;}
+  if(P.rangeFx)for(const r of P.rangeFx){const pr=Math.max(r.t,0)/r.life,a0=r.a-r.arc/2,a1=r.a+r.arc/2;
+    ctx.globalAlpha=0.13*pr+0.04;ctx.fillStyle='#ffe9a8';
+    ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.arc(P.x,P.y,r.range,a0,a1);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=0.55*pr;ctx.strokeStyle='#ffd76a';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(P.x,P.y,r.range,a0,a1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(P.x+Math.cos(a0)*r.range,P.y+Math.sin(a0)*r.range);
+    ctx.moveTo(P.x,P.y);ctx.lineTo(P.x+Math.cos(a1)*r.range,P.y+Math.sin(a1)*r.range);ctx.stroke();
     ctx.globalAlpha=1;}
   for(const sh of P.shocks){const pr=Math.max(sh.t,0)/sh.life,rr=sh.range*(1.15-pr*0.9);
     ctx.globalAlpha=pr*0.7;ctx.strokeStyle=sh.color;ctx.lineWidth=3+7*pr;
