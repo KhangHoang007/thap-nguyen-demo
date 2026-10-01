@@ -732,6 +732,24 @@ const ETYPES={
  imp:{hp:26,spd:95,dmg:6,r:8,color:'#e86a3d',dark:'#a8442a',name:'Tiểu Quỷ Lửa',ranged:true},
  cinder:{hp:20,spd:130,dmg:5,r:7,color:'#ff9a3d',dark:'#b85a1a',name:'Than Hồng',explode:true},
 };
+// ============ NGUYEN LIEU NANG CAP (roi tu quai) ============
+const MATERIALS={
+ bone_rat:{name:'Xương Chuột',desc:'Xương cứng của Chuột Đá, dùng cường hóa vũ khí.',icon:'🦴'},
+ wing_bat:{name:'Cánh Dơi',desc:'Cánh mỏng của Dơi Mù, nhẹ và bền.',icon:'🦇'},
+ fang_minirat:{name:'Răng Chuột Con',desc:'Răng nanh nhỏ nhưng sắc của Chuột Con.',icon:'🦷'},
+ silk_spider:{name:'Tơ Nhện',desc:'Tơ Nhện Hang dai chắc, dùng bện cán vũ khí.',icon:'🕸️'},
+ goo_slime:{name:'Nhớt Slime',desc:'Chất nhầy của Slime Đá, tăng độ bám.',icon:'💧'},
+ shell_mite:{name:'Vỏ Pha Lê',desc:'Mảnh vỏ cứng của Bọ Pha Lê, lấp lánh.',icon:'💎'},
+ core_golem:{name:'Lõi Pha Lê',desc:'Lõi năng lượng của Golem Pha Lê.',icon:'🔷'},
+ horn_imp:{name:'Sừng Quỷ',desc:'Sừng của Tiểu Quỷ Lửa, chứa hỏa ma lực.',icon:'😈'},
+ ember_cinder:{name:'Than Hồng',desc:'Than còn cháy âm ỉ của quái Than Hồng.',icon:'🔥'},
+};
+// Map monster type -> material id
+const MON_DROPS={
+ rat:'bone_rat', bat:'wing_bat', minirat:'fang_minirat',
+ spider:'silk_spider', slime:'goo_slime', mite:'shell_mite',
+ golem:'core_golem', imp:'horn_imp', cinder:'ember_cinder',
+};
 // ============ TAI KHOAN & LUU DU LIEU ============
 const SAVE_KEY='thapNguyenSaveV1'; // du lieu cu (1 ten) - giu de migrate
 const ACC_KEY='thapNguyenAccountsV1';
@@ -926,7 +944,7 @@ if(typeof window!=='undefined'&&window.addEventListener){
   window.addEventListener('pagehide',cloudFlushSync);
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')cloudFlushSync();});
 }
-function blankSave(name){return {name:name,bestFloor:1,bestKills:0,totalKills:0,wins:0,plays:0,lastRace:null,gear:null,quest:{kills:0,maxFloor:1,boss:false,gold:0,items:0,elites:0,trades:0},claimed:{},tut:false,awk:null,checkpoint:null,daily:null,hourly:null,dailyHist:[],potions:{hp:0,en:0,rage:0,swift:0,stone:0,regen:0}};}
+function blankSave(name){return {name:name,bestFloor:1,bestKills:0,totalKills:0,wins:0,plays:0,lastRace:null,gear:null,quest:{kills:0,maxFloor:1,boss:false,gold:0,items:0,elites:0,trades:0},claimed:{},tut:false,awk:null,checkpoint:null,daily:null,hourly:null,dailyHist:[],potions:{hp:0,en:0,rage:0,swift:0,stone:0,regen:0},mats:{}};}
 // ============ TAI KHOAN ADMIN (test nhanh) ============
 const ADMIN_USER='admin',ADMIN_PW='thapnguyen999';
 function isAdminLogin(u,p){return String(u).toLowerCase()===ADMIN_USER&&String(p)===ADMIN_PW;}
@@ -1116,7 +1134,7 @@ let shakeT=0,shakeMag=0,freezeT=0,winDelay=0,flashT=0,saveT=0;
 let buttons=[];
 let floorTiles=[],wallTiles=[];
 let skillFx={name:'',t:0,color:'#fff'};
-let npcs=[],villagers=[],lobbyPrompt='',panelOpen=false,tradeSel=[],invOpen=false,tutOpen=false;
+let npcs=[],villagers=[],lobbyPrompt='',panelOpen=false,tradeSel=[],invOpen=false,tutOpen=false,paused=false,invTab='all';
 const ICON_URL={swords:[],shields:[],heart:''};
 let lightCv=null,lights=[];
 const SHOP_WPRICE=[60,180,450,1200],SHOP_APRICE=[50,150,380,1000],SHOP_RPRICE=[70,200,500,1300];
@@ -1249,6 +1267,7 @@ window.addEventListener('keydown',function(e){
   if(k==='f')pressF();
   if(k==='escape'){if(panelOpen)closePanel();if(invOpen)closeInv();if(setOpen)closeSet();if(charOpen)closeChar();if(gateOpen)closeGatePanel();}
   if(k==='i'&&(mode==='play'||mode==='lobby')){invOpen?closeInv():openInv();}
+  if(k==='p'&&mode==='play'&&!invOpen&&!setOpen&&!charOpen){togglePause();}
   if(k==='m'){toggleMusic();}
   if(k==='v'){VOICE_ON=!VOICE_ON;sfx('ui');}
   if(k>='1'&&k<='6'&&(mode==='play'||mode==='lobby')){const _pt=POTIONS[parseInt(k)-1];if(_pt)usePotion(_pt.id);}
@@ -1350,6 +1369,10 @@ function drawTouch(){
 window.addEventListener('mouseup',function(){mouse.down=false;});
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 function handleClick(x,y){
+  // Pause button click (W-132,H-84,122,32)
+  if(mode==='play'&&!paused&&x>=W-132&&x<=W-10&&y>=H-84&&y<=H-52){togglePause();return;}
+  // Túi button click (W-132,H-44,122,32)
+  if((mode==='play'||mode==='lobby')&&x>=W-132&&x<=W-10&&y>=H-44&&y<=H-12){invOpen?closeInv():openInv();return;}
   for(const b of buttons){if(x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h){b.fn();return;}}
   if(mode==='title')mode='select';
   else if(mode==='select'){
@@ -1917,7 +1940,7 @@ function startFromCheckpoint(){
   const cp=SAVE&&SAVE.checkpoint;
   closePanel();closeGatePanel();gateOpen=false;
   floor=cp?cp.floor:1;cycle=cp?(cp.cycle||1):1;kills=0;winDelay=0;
-  if(P){P.hp=P.maxhp;P.en=P.maxen;}
+  if(P){P.en=P.maxen;}
   genFloor(floor);mode='play';musicStart(musicForFloor(floor));sfx('portal');
 }
 // ============ PANEL NPC (SHOP / TRAO DOI / HOI MAU) ============
@@ -1952,10 +1975,94 @@ function shopCountdowns(){
 }
 function npcMsg(t){gid('npcMsg').textContent=t||'';}
 function npcGold(){gid('npcGold').innerHTML=coinImg()+' Vàng của bạn: '+P.gold;}
+// ============ CUONG HOA VU KHI ============
+const UPGRADE_MAX=10;
+function upgradeCost(up){
+  // up: current upgrade level (0-9), returns {gold, mats}
+  const gold=200*(up+1);
+  const matCount=2+up;
+  // Higher upgrades need rarer materials
+  let matPool;
+  if(up<3)matPool=['bone_rat','wing_bat','fang_minirat','silk_spider','goo_slime'];
+  else if(up<6)matPool=['silk_spider','goo_slime','shell_mite','horn_imp','ember_cinder'];
+  else matPool=['shell_mite','core_golem','horn_imp','ember_cinder'];
+  return {gold:gold,matCount:matCount,matPool:matPool};
+}
+function canUpgrade(){
+  if(!P||!P.weapon)return {ok:false,msg:'Chưa có vũ khí!'};
+  if(P.weapon.sp)return {ok:false,msg:'Vũ khí đặc biệt không cường hóa được!'};
+  const up=P.weapon.up||0;
+  if(up>=UPGRADE_MAX)return {ok:false,msg:'Đã đạt cấp tối đa!'};
+  const cost=upgradeCost(up);
+  if(P.gold<cost.gold)return {ok:false,msg:'Không đủ vàng! Cần '+cost.gold+' vàng.'};
+  // Check materials
+  if(!SAVE.mats)SAVE.mats={};
+  let have=0;
+  cost.matPool.forEach(function(mid){have+=(SAVE.mats[mid]||0);});
+  if(have<cost.matCount)return {ok:false,msg:'Không đủ nguyên liệu! Cần '+cost.matCount+' nguyên liệu ('+cost.matPool.map(function(id){return MATERIALS[id].name;}).join(', ')+').'};
+  return {ok:true,cost:cost};
+}
+function doUpgradeWeapon(){
+  const chk=canUpgrade();
+  if(!chk.ok){npcMsg('⚠️ '+chk.msg);beep(220,0.15);return;}
+  const cost=chk.cost;
+  const up=P.weapon.up||0;
+  // Deduct gold
+  P.gold-=cost.gold;
+  // Deduct materials (from pool, in order)
+  let need=cost.matCount;
+  for(const mid of cost.matPool){
+    if(need<=0)break;
+    const have=SAVE.mats[mid]||0;
+    const take=Math.min(have,need);
+    SAVE.mats[mid]=have-take;
+    need-=take;
+  }
+  // Apply upgrade: +8% dmg, +2% crit per level
+  P.weapon.up=up+1;
+  const base=WEAPONS[P.weapon.tier];
+  if(base){
+    P.weapon.dmg=base.dmg*(1+0.08*P.weapon.up);
+    P.weapon.crit=base.crit+0.02*P.weapon.up;
+  }
+  persist();saveGear();
+  npcMsg('✨ Cường hóa thành công! '+P.weapon.name+' lên +'+P.weapon.up+'!');
+  burst(P.x,P.y,'#ffd76a',20,200);sfx('win');beep(880,0.2);
+  renderShop();
+}
+function renderUpgradeSection(){
+  if(!P||!P.weapon)return '';
+  const up=P.weapon.up||0;
+  let h='<h4>✨ CƯỜNG HÓA VŨ KHÍ <span class="sub">— dùng nguyên liệu từ quái</span></h4>';
+  h+='<div class="row" style="border-color:#e8c15a"><div class="info">'+itImg(P.weapon.name)+'<b>'+P.weapon.name+' +'+up+'</b><br>';
+  h+='<span class="sub">'+weaponDesc(P.weapon)+'</span><br>';
+  if(up<UPGRADE_MAX){
+    const cost=upgradeCost(up);
+    const base=WEAPONS[P.weapon.tier];
+    let nextDmg='',nextCrit='';
+    if(base){
+      nextDmg=' → +'+Math.round((base.dmg*(1+0.08*(up+1))-1)*100)+'%';
+      nextCrit=' • Chí mạng '+Math.round((base.crit+0.02*(up+1))*100)+'%';
+    }
+    h+='<span class="sub" style="color:#7dff9d">Cấp tiếp theo: Sát thương'+nextDmg+nextCrit+'</span><br>';
+    h+='<span class="sub">Cần: '+cost.gold+' vàng + '+cost.matCount+' nguyên liệu</span><br>';
+    h+='<span class="sub" style="color:#8a8fa3">('+cost.matPool.map(function(id){const n=SAVE.mats?SAVE.mats[id]||0:0;return MATERIALS[id].icon+' '+MATERIALS[id].name+' x'+n;}).join(', ')+')</span>';
+  }else{
+    h+='<span class="sub" style="color:#ffd76a">Đã đạt cấp tối đa!</span>';
+  }
+  h+='</div>';
+  if(up<UPGRADE_MAX){
+    const chk=canUpgrade();
+    h+='<button '+(chk.ok?'':'disabled style="opacity:0.4"')+' onclick="doUpgradeWeapon()">Cường hóa</button>';
+  }
+  h+='</div>';
+  return h;
+}
 function renderShop(){
   gid('npcTitle').textContent='⚒ Thợ Rèn — Mua bán';
   npcGold();npcMsg('');
   let h='<div class="row" style="border-color:#e8c15a"><div class="info"><b>Đang dùng:</b> <span class="sub">'+itImg(P.weapon.name)+' '+P.weapon.name+' • '+itImg(P.armorItem.name)+' '+P.armorItem.name+' • '+itImg(P.ring.name)+' '+P.ring.name+'</span></div></div>';
+  h+=renderUpgradeSection();
   h+='<h4>MUA GIÁP</h4>';
   for(let t=0;t<4;t++){
     const a=ARMORS[t],pr=SHOP_APRICE[t];
@@ -2121,6 +2228,11 @@ ITEM_IMG["Kiếm Linh Hồn"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIw
 ITEM_IMG["Song Kiếm Phong Hỏa"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAAA5UlEQVR4nO3ZKw7CQBRG4TbBYVgHqgmwiXoQxSNwGARLYAl4RoBnE0BS1e3ADpr8gZs7c3M+PU0fczKdplUFAAAABFd7X0CpXt38o4xfpiHEs554X0Au1AAWTaOdIA3a+EyFDcY6gHffS+OjMFsmz+34hB0f2hKdWwBRXjEqtxWGAMrkFgwBlMktGAIAAAA/MNsXtPvT6FfQTNz0pt2GPUwG3Da9q+1aPOImfYYTmA23YJ7XuzSewPLgFow+QVoABGYj7E13F9vA1BUySmAhbuIfrAM7TOsQzzrs32qV9SsSAAAAfr5Q1kuswJpALwAAAABJRU5ErkJggg==";
 ITEM_IMG["Kiếm Cự Long"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABXUlEQVR4nO3ZMUvDQBgG4Dfi4NjNItJZihAndWsnwcVVcCjdCv4A6U8oujtn6o/oZDddilnkmzMUu+UfnFOhldwlR0ju0rwPhAwHl29477vkAhAREREREVFFXp/7ynUNVK2g7AS6kLy8/5Sem/xz7LoAE5VGnwBuAHwFnfGt63rI88Acckiauhj2ArO7vZTdUlQa8X2mANuw/C6fFAB0B3MnW762w1yeQ/V6Z0iSNUx3nU28MD5YpjEuZmHrx7cLK+iMrQLgKjh7D9vtMB/faW5YkmSN0UM/c+LR41W1lR+Y0/AOQH5wtkH5r67gHOkGioTF1GFsyTRu9fjy/g2beAGVRsp0GSepATuMJ0QEADCcrNhhsrhe0b6MiwhEBMPJKsgLS5buYB7U+R6j7TBFv5J0B3fX4Um5ylrCNiSuv5J40ktWvD64c6Wph2p1YGAyMCQ14d9qIiIiIiJqvD+nlAunleB8bQAAAABJRU5ErkJggg==";
 ITEM_IMG["Đao Huyết Chiến"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABK0lEQVR4nO3YMQ6CQBAF0L/GysraGC9gY6d2noMjcCCOwDmkUgtjLLyAhUegHduFAAGWZVj9ryEhgV2GzywAEBEREREREVFPxvUE8WolVfuTz8f53DQ9c+0J/AOJoyuAPYCbSdKD9nxcTCYw2kWVOBKTpF66YughsRUCYy8vYy8pdlEljiqXOZ+yx1NlXF8h9aW2w6wB2SwWeOc5mrZ1XIqfPZ59D3WiMa5dpxDCUxuYNmF55zl2y2Xl8Vo3PTR2ncoP2RQDVBuYNmFp6jDUXfkha+rSWmHy1mFCc7q8zPm4Hf0dpgk7TEuny0ulUBrj2iHVuu4uChPs85UU0o877U/3X8A/vR0IIGaAmoVspj2BoQjg/f3j7nuAAPxMYMa4mQwMERERERERFX0BnnOrJgetqi8AAAAASUVORK5CYII=";
+ITEM_IMG["Kiếm Admin Tối Thượng"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABXElEQVR4nO3ZvXWDMBQF4PtyModrmAAXGSJpMoTtNpskDOEhUqXAE/jVLPJSGBInB5kfgYR17te44UhCujyEDBARERER0XAGWOwx0LIeZm3tOGtrtELi24Adu6uKvF7aNrMKQAHgJCJb3/7WLvX7fVy6g1iTFmvhUgzJtcUDE0vXwtl59xuivEx6YZfyJzDXr5f2lTKVma15A1yYfaxifCIyap7tvDMAkLyUGFXUWWEOT7DNBqhr4Navk+4XGG562gdrUnB0D8lL733oGM7ADAlLXYccaqKaB8srOECw4DgDMyQsNysMjfMvOH3XxeI8h2GFCUtVoaqQHrHHyQoTmaoCAPKXz0lhWM0e5v1r2FfS23P3wV07EV2yLDuh2d2rajGkn1TdS1B++vVtoO+kl9I6/2FgOqR+vO9j3j8fZ2ZmlV1UIfsVkW2zxwwallj3G42r2hAREREREd2Nb3bsuvmnA6/5AAAAAElFTkSuQmCC";
+ITEM_IMG["Giáp Admin Bất Diệt"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABMklEQVR4nO3ZsQnCQBQG4D/iCA7hAIKiCziBpaVFwAUcwBEygKV2VpZpFAUHyBDZ4WwUzuAloF5e3uP/uiNw95L3k1wSgIiIiIiIuq8o3bUonStKd5WuxbpEuoAmm5Nzdce386Tz5/AM8hjAbThIJtL1/KIvXUAbirI+dP8wHISDqz0kPlOBCQVjd29/7boAaaY+MH6j2ghGSHVtqwHq/Ek07WG0WI7ex1oDpLJoCyFajnSGRuUjKT8eos19zhaYpfto87/kx+hLRNGTLuAb53Ueb7xaxZ3/w1gTdbdEAJim+2iPpLbuMABwyRbqrr+6ggHuYSR1vmAL4QDsvCWp3PT6/EZIfoepshKQKvWB8Rsh+aXXakCq1AfGF2qS9L8kS0wFJuQfzbT0x5mIiIiIiGo8APHidnM0J4lyAAAAAElFTkSuQmCC";
+ITEM_IMG["Nhẫn Admin Toàn Năng"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABVElEQVR4nO2Yza3CMBCEd59ogNdFOqARkLhxzisgNVAAOecWiTRCBymDEpZDnoVjYpHwoxhmvlNsWdHKGs2OV4QQQt6Fzl1AipiYuW8V5R15/MxdQGr4Yhlao0PBiIi1uVmbW08cnkxMzI7FksIR8JbkRLDeba+b2eH2YPvXW2pWwt4brMNEHSMQR1P83hyxNod1m8XcBaRG5x7ldWMvYruuQTVVPVdZyQDpMKFDNFUtmpUaazVD+6iZBlIwIZv9+W4mQc4tPhTMBMYI69uBzTDuZUTnmAYd5gkQX0sUDJkEbEt6lN6QDxBIwbxqnoKYf+Bb0pR5yrFYWlPV0AM8eMGIjAuvqIO6EDhLdfgC8HPJUJvxBeXcBXUmA5lhROLhNSYk0gHVkszsZB2nMYE1llWcu/j/e3GpyQLlMKq66q3/RTM2n4QiC/9HQEF0DkIIIeTDuADpXov9FPah6AAAAABJRU5ErkJggg==";
+ITEM_IMG["Kiếm Lữa Thiêng"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABiUlEQVR4nO3ZMXKCQBQG4H8zqVJRW9hQxUkfS45gZZEjcIAcIgfIESysOIKlaVI5DA2NBUegzEuRwOCa3ZDosgvzfw3ujMIKv+/JAhAREREREZEjL4uZ+J4DuaUu3YEpJM95dfG+fZESewCPAN5UjKXv+YTk1sdBQ78gIc4pFDc+DqpiLFUMxQvzP7JNxTZ26aTCdNvLpS1lyC8xZmr9aj3PejWWbSrIdpBtKu1n9bFDxpb0AMh8dodjVcO2Ncp2DqY7Pc0Py3Sxz6pwtgNWSXt+5Wkh3bFrxsD0CcuxqoEoGmSik9Vc+F+C02rCsUoggOhjtcmdVhljYPqExVph6G+04Fjf1wnJ2XaTO5wkK0wwiqIAANyv7RWi+Q9jDI1jrDCetUF5/+jXSjrhUJtcdduS63YEWAJzANShqr9eW7ZJFP1YQpsTQXa9g9LQ2s9JaBy3I4ArvaOk30IPdUsNeFq4uzYpsZcS8r1mMXl6OIYKC+Dp0cC1hb5iHPqjEG/4tJqIiIiIiEbvExOQ++BPSdimAAAAAElFTkSuQmCC";
+ITEM_IMG["Kiếm Thiép Xanh"]="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAAAaCAYAAABl/7RgAAABNElEQVR4nO3ZMU7DMBTG8ZeKkYETROnOwFbULSMSJ+gBOnAYRoaycwImlmyoXZgqlK2Wz9DdDGAJkJymsdIXp//f4gxJ9GR9fo4cEQAAAABAT+YPK6ddA/qVxb4gFJL3p2X0uzE8E+0CxqYybl0Z5yrj1tq19OFCuwDvZ4JnIrIpi+xWu56uUq69jT+B+b29xG4plXFdv2dmEc8mpyyyo+Z5sdo5EZGX5VRlyw92mMvre5fnuVhrpWkMeX4zfdQ7On5xpBKcYGDahMVaK1fFzQnLHR+/sFIJTjAwbcLS1GFwnP/BOXSfFjrMQNR1LSIi5YFO4TuKFjqMMh+Uj8e7TlvKYL5h9tvX7HP7fd00hg7u/ESgWSpB8c7qpHcsZz2aBnNwdwqEJB6/BqCHv9UAAAAAkvcFau63C2csz5kAAAAASUVORK5CYII=";
 function weaponImgKey(it){
   if(!it)return '';
   if(typeof WIMG==='undefined')return '';
@@ -2156,6 +2268,49 @@ function weaponImgURL(it){
   return '';
 }
 function itImg(nm){try{if(typeof ITEM_IMG!=='undefined'&&nm&&ITEM_IMG[nm])return '<img class="it2d" src="'+ITEM_IMG[nm]+'" alt="">';}catch(e){}return '';}
+// ============ MO TA VU KHI ============
+const WEAPON_FLAVOR={
+ 'Kiếm Gỗ':'Thanh kiếm gỗ cho tân thủ tập luyện.',
+ 'Kiếm Sắt':'Kiếm sắt cơ bản của lính đánh thuê.',
+ 'Kiếm Thép':'Thép tốt, sắc bén hơn sắt thường.',
+ 'Kiếm Ma Thuật':'Chứa ma lực nhẹ, tăng chí mạng.',
+ 'Kiếm Rồng Lửa':'Rèn từ vảy rồng lửa, chém ra lửa.',
+ 'Kiếm Băng Giá':'Băng vĩnh cửu, đóng băng kẻ địch.',
+ 'Kiếm Quang Thánh':'Ánh sáng thánh thần xua tan bóng tối.',
+ 'Kiếm Địa Chấn':'Nặng như núi, mỗi nhát chém rung đất.',
+ 'Kiếm Thủy Long':'Sức mạnh của rồng nước sâu thẳm.',
+ 'Kiếm Hư Không':'Chém rách không gian, khó lường.',
+ 'Kiếm Tinh Tú':'Đúc từ mảnh sao băng, lấp lánh.',
+ 'Kiếm Độc Xà':'Tẩm độc rắn, vết thương khó lành.',
+ 'Kiếm Hỏa Ngục':'Lửa địa ngục thiêu đốt mọi thứ.',
+ 'Kiếm Thiên Lôi':'Gọi sấm sét từ chín tầng trời.',
+ 'Kiếm Linh Hồn':'Chém vào linh hồn, bỏ qua giáp.',
+ 'Kiếm Cự Long':'Răng rồng cổ đại, uy nghiêm.',
+ 'Kiếm Vô Cực':'Cảnh giới tối cao của kiếm đạo.',
+ 'Kiếm Admin Tối Thượng':'Vũ khí của admin, sức mạnh tuyệt đối.',
+};
+function weaponDesc(w){
+  if(!w)return '';
+  if(WEAPON_FLAVOR[w.name])return WEAPON_FLAVOR[w.name];
+  let d='';
+  if(w.dmg)d+='Sát thương +'+Math.round((w.dmg-1)*100)+'%';
+  if(w.crit)d+=(d?' • ':'')+'Chí mạng '+Math.round(w.crit*100)+'%';
+  if(w.elem)d+=(d?' • ':'')+'Nguyên tố '+w.elem;
+  return d||'Vũ khí thường.';
+}
+function armorDesc(a){
+  if(!a)return '';
+  let d='';
+  if(a.red)d+='Giảm '+Math.round(a.red*100)+'% sát thương nhận';
+  return d||'Giáp thường.';
+}
+function ringDesc(r){
+  if(!r)return '';
+  let d='';
+  if(r.crit)d+='Chí mạng +'+Math.round(r.crit*100)+'%';
+  if(r.maxhp)d+=(d?' • ':'')+'+'+r.maxhp+' HP tối đa';
+  return d||'Nhẫn thường.';
+}
 function potImg(pt){return itImg(pt.name)||(pt.icon||'');}
 function coinImg(){return itImg('Xu Vàng')||'\u{1F4B0}';}
 function showCongrats(o){
@@ -2594,6 +2749,42 @@ function openInv(){
   renderInv();gid('invClose').onclick=closeInv;beep(700,0.08);
 }
 function closeInv(){invOpen=false;gid('invPanel').style.display='none';}
+// ============ TAM DUNG GAME ============
+function togglePause(){
+  if(mode!=='play')return;
+  paused=!paused;
+  if(paused){showPauseMenu();sfx('ui');}
+  else{hidePauseMenu();sfx('ui');}
+}
+function showPauseMenu(){
+  let pm=gid('pauseMenu');
+  if(!pm){
+    pm=document.createElement('div');
+    pm.id='pauseMenu';
+    pm.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999;';
+    pm.innerHTML='<div style="background:#1a1d26;border:2px solid #e8c15a;border-radius:12px;padding:30px;text-align:center;min-width:300px;">'+
+      '<h2 style="color:#e8c15a;margin:0 0 10px 0;">⏸ TẠM DỪNG</h2>'+
+      '<p style="color:#8a8fa3;margin:0 0 20px 0;">Tầng '+floor+' • HP '+Math.ceil(P.hp)+'/'+P.maxhp+'</p>'+
+      '<button onclick="togglePause()" style="display:block;width:100%;margin:8px 0;padding:12px;font-size:16px;">▶ Tiếp tục</button>'+
+      '<button onclick="openInv();togglePause()" style="display:block;width:100%;margin:8px 0;padding:12px;font-size:16px;">🎒 Mở túi đồ</button>'+
+      '<button onclick="quitToLobby()" style="display:block;width:100%;margin:8px 0;padding:12px;font-size:16px;background:#5a2a2a;">🏠 Về sảnh (giữ nguyên HP)</button>'+
+      '</div>';
+    document.body.appendChild(pm);
+  }else{
+    pm.querySelector('p').textContent='Tầng '+floor+' • HP '+Math.ceil(P.hp)+'/'+P.maxhp;
+    pm.style.display='flex';
+  }
+}
+function hidePauseMenu(){
+  const pm=gid('pauseMenu');
+  if(pm)pm.style.display='none';
+}
+function quitToLobby(){
+  paused=false;hidePauseMenu();
+  // HP giữ nguyên, không hồi
+  mode='lobby';genLobby();musicStart(4);sfx('portal');
+  if(SAVE){SAVE.checkpoint={floor:floor,cycle:cycle};persist();}
+}
 function invMsg(t){gid('invMsg').textContent=t||'';}
 function sellFromInv(kind,idx){
   const tier=P.inv[kind+'s'][idx];
@@ -2674,7 +2865,7 @@ function invEquipSp(kind,idx){
   if(r.ok){invMsg('Đã trang bị '+r.name+'!');beep(760,0.1);}else invMsg(r.msg||'Không trang bị được!');
   renderInv();
 }
-function invSellSp(kind,idx){
+function invSellSp(kind,idx){if(mode==='play'){invMsg('⛔ Không thể bán đồ trong tháp! Về sảnh mới bán được.');beep(220,0.15);return;}
   const it=P.inv[kind][idx];if(!it)return;
   const pr=Math.floor((it.price||100)*0.4);
   P.inv[kind].splice(idx,1);P.gold+=pr;saveGear();invMsg('Đã bán +'+pr+' vàng!');beep(660,0.1);renderInv();
@@ -2700,37 +2891,77 @@ function invUnequip(kind){
   }
   saveGear();beep(520,0.08);renderInv();
 }
-function invSell(kind,idx){const pr=sellFromInv(kind,idx);invMsg('Đã bán +'+pr+' vàng!');beep(660,0.1);renderInv();}
+function invSell(kind,idx){if(mode==='play'){invMsg('⛔ Không thể bán đồ trong tháp! Về sảnh mới bán được.');beep(220,0.15);return;}const pr=sellFromInv(kind,idx);invMsg('Đã bán +'+pr+' vàng!');beep(660,0.1);renderInv();}
 function invEquip(kind,idx){const nm=equipFromInv(kind,idx);invMsg('Đã trang bị '+nm+'!');beep(760,0.1);renderInv();}
 function invRow(kind,tier,equipped,idx){
   if(tier<0)return '<div class="row"><div class="info"><span class="sub">'+(kind==='weapon'?'Chưa có vũ khí':kind==='armor'?'Chưa có giáp':'Chưa có nhẫn')+'</span></div></div>';
-  const nm=kind==='weapon'?WEAPONS[tier].name:kind==='armor'?ARMORS[tier].name:RINGS[tier].name;
-  const sub=kind==='weapon'?('+'+Math.round((WEAPONS[tier].dmg-1)*100)+'% sát thương'):kind==='armor'?('giảm '+Math.round(ARMORS[tier].red*100)+'% sát thương nhận'):('+'+Math.round(RINGS[tier].crit*100)+'% chí mạng'+(RINGS[tier].maxhp?' • +'+RINGS[tier].maxhp+' HP':''));
+  const it=kind==='weapon'?WEAPONS[tier]:kind==='armor'?ARMORS[tier]:RINGS[tier];
+  const nm=it.name;
+  const sub=kind==='weapon'?('+'+Math.round((it.dmg-1)*100)+'% sát thương'):kind==='armor'?('giảm '+Math.round(it.red*100)+'% sát thương nhận'):('+'+Math.round(it.crit*100)+'% chí mạng'+(it.maxhp?' • +'+it.maxhp+' HP':''));
+  const desc=kind==='weapon'?weaponDesc(it):kind==='armor'?armorDesc(it):ringDesc(it);
   let btns='';
   if(equipped)btns='<span class="sub" style="color:#7dff9d;font-weight:bold">✓ Đã trang bị</span> <button onclick="invUnequip(\''+kind+'\')">Tháo</button>';
   else{const sp=Math.floor((kind==='weapon'?SHOP_WPRICE:kind==='armor'?SHOP_APRICE:SHOP_RPRICE)[tier]*0.4);
     btns='<button onclick="invEquip(\''+kind+'\','+idx+')">Trang bị</button><button onclick="invSell(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
-  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b> <span class="sub">'+sub+'</span></div><span>'+btns+'</span></div>';
+  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b> <span class="sub">'+sub+'</span><br><span class="sub" style="color:#8a8fa3;font-style:italic">'+desc+'</span></div><span>'+btns+'</span></div>';
 }
 function renderInv(){
   gid('invGold').innerHTML=coinImg()+' Vàng: '+P.gold;
-  let h='<h4>ĐANG TRANG BỊ</h4>';
-  h+=(P.weapon.sp?spRow('spw',0,true):invRow('weapon',P.weapon.tier,true))+(P.armorItem.sp?spRow('spa',0,true):invRow('armor',P.armorItem.tier,true))+invRow('ring',P.ring.tier,true);
-  h+='<h4>TRONG TÚI ('+(P.inv.weapons.length+P.inv.armors.length+P.inv.rings.length+P.inv.spw.length+P.inv.spa.length)+' món)</h4>';
-  if(!P.inv.weapons.length&&!P.inv.armors.length&&!P.inv.rings.length&&!P.inv.spw.length&&!P.inv.spa.length)
-    h+='<div class="row"><div class="info"><span class="sub">Túi trống — vào tháp đánh quái nhặt đồ!</span></div></div>';
-  P.inv.weapons.forEach((t,i)=>{h+=invRow('weapon',t,false,i);});
-  P.inv.armors.forEach((t,i)=>{h+=invRow('armor',t,false,i);});
-  P.inv.rings.forEach((t,i)=>{h+=invRow('ring',t,false,i);});
-  P.inv.spw.forEach((it,i)=>{h+=spRow('spw',i,false);});
-  P.inv.spa.forEach((it,i)=>{h+=spRow('spa',i,false);});
-  h+='<h4>THUỐC ('+POTIONS.reduce((a,pt)=>a+(SAVE.potions[pt.id]||0),0)+' bình)</h4>';
-  POTIONS.forEach(function(pt,i){
-    const n=SAVE.potions[pt.id]||0;
-    h+='<div class="row"><div class="info"><b>'+potImg(pt)+' '+pt.name+'</b> <span class="sub">'+pt.desc+'</span> <span class="sub">x'+n+' — phím '+(i+1)+'</span></div>'+(n>0?'<button onclick="usePotion(\''+pt.id+'\')">Dùng</button>':'<button disabled style="opacity:0.4">Hết</button>')+'</div>';
+  // Tabs
+  const tabs=[['all','📦 Tất cả'],['weapon','⚔️ Vũ khí'],['armor','🛡️ Giáp'],['ring','💍 Nhẫn'],['potion','🧪 Thuốc'],['mat','⛏️ Nguyên liệu']];
+  let h='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">';
+  tabs.forEach(function(t){
+    const active=invTab===t[0];
+    h+='<button onclick="invTab=\''+t[0]+'\';renderInv()" style="'+(active?'background:#e8c15a;color:#1a1d26;font-weight:bold;':'')+'padding:6px 10px;font-size:13px;">'+t[1]+'</button>';
   });
+  h+='</div>';
+  // Equipped (always show)
+  h+='<h4>ĐANG TRANG BỊ</h4>';
+  h+=(P.weapon.sp?spRow('spw',0,true):invRow('weapon',P.weapon.tier,true))+(P.armorItem.sp?spRow('spa',0,true):invRow('armor',P.armorItem.tier,true))+invRow('ring',P.ring.tier,true);
+  // Filtered inventory
+  const showAll=invTab==='all';
+  if(showAll||invTab==='weapon'){
+    h+='<h4>⚔️ VŨ KHÍ ('+P.inv.weapons.length+P.inv.spw.length+')</h4>';
+    if(!P.inv.weapons.length&&!P.inv.spw.length)h+='<div class="row"><div class="info"><span class="sub">Chưa có vũ khí trong túi</span></div></div>';
+    P.inv.weapons.forEach((t,i)=>{h+=invRow('weapon',t,false,i);});
+    P.inv.spw.forEach((it,i)=>{h+=spRow('spw',i,false);});
+  }
+  if(showAll||invTab==='armor'){
+    h+='<h4>🛡️ GIÁP ('+P.inv.armors.length+P.inv.spa.length+')</h4>';
+    if(!P.inv.armors.length&&!P.inv.spa.length)h+='<div class="row"><div class="info"><span class="sub">Chưa có giáp trong túi</span></div></div>';
+    P.inv.armors.forEach((t,i)=>{h+=invRow('armor',t,false,i);});
+    P.inv.spa.forEach((it,i)=>{h+=spRow('spa',i,false);});
+  }
+  if(showAll||invTab==='ring'){
+    h+='<h4>💍 NHẪN ('+P.inv.rings.length+')</h4>';
+    if(!P.inv.rings.length)h+='<div class="row"><div class="info"><span class="sub">Chưa có nhẫn trong túi</span></div></div>';
+    P.inv.rings.forEach((t,i)=>{h+=invRow('ring',t,false,i);});
+  }
+  if(showAll||invTab==='potion'){
+    h+='<h4>🧪 THUỐC ('+POTIONS.reduce((a,pt)=>a+(SAVE.potions[pt.id]||0),0)+' bình)</h4>';
+    POTIONS.forEach(function(pt,i){
+      const n=SAVE.potions[pt.id]||0;
+      h+='<div class="row"><div class="info"><b>'+potImg(pt)+' '+pt.name+'</b> <span class="sub">'+pt.desc+'</span> <span class="sub">x'+n+' — phím '+(i+1)+'</span></div>'+(n>0?'<button onclick="usePotion(\''+pt.id+'\')">Dùng</button>':'<button disabled style="opacity:0.4">Hết</button>')+'</div>';
+    });
+  }
+  if(showAll||invTab==='mat'){
+    h+='<h4>⛏️ NGUYÊN LIỆU</h4>';
+    h+=renderMats();
+  }
   invMsg('');
   gid('invBody').innerHTML=h;
+}
+function renderMats(){
+  if(!SAVE.mats)SAVE.mats={};
+  const keys=Object.keys(SAVE.mats).filter(k=>SAVE.mats[k]>0);
+  if(!keys.length)return '<div class="row"><div class="info"><span class="sub">Chưa có nguyên liệu — đánh quái trong tháp để nhặt!</span></div></div>';
+  let h='';
+  keys.forEach(function(k){
+    const m=MATERIALS[k];
+    if(!m)return;
+    h+='<div class="row"><div class="info"><b>'+(m.icon||'⛏️')+' '+m.name+'</b> <span class="sub">'+m.desc+'</span> <span class="sub">x'+SAVE.mats[k]+'</span></div></div>';
+  });
+  return h;
 }
 // ============ CUT-IN 2D KHI TUNG CHIEU ============
 function heroCutinURL(){
@@ -3101,7 +3332,7 @@ function killEnemy(e){
   P.shocks.push({x:e.x,y:e.y,t:0.35,life:0.35,range:e.isBoss?160:90,color:e.color});
   if(e.elite||e.isBoss){scorches.push({x:e.x,y:e.y,r:e.isBoss?70:45,t:6});fxCrack(e.x,e.y,e.color);}
   if(e.isBoss){for(let bi=0;bi<4;bi++)fxPillar(e.x+R(-70,70),e.y+R(-20,20),e.color,300);}
-  dropLoot(e.x,e.y,e.isBoss,e.elite);
+  dropLoot(e.x,e.y,e.isBoss,e.elite,e.type);
   sfx(e.isBoss?'bossdie':'die');
   if(P.awk==='quang')P.hp=Math.min(P.maxhp,P.hp+P.maxhp*0.04);
   if(e.type==='cinder'){
@@ -3111,10 +3342,19 @@ function killEnemy(e){
   if(e.isBoss){addFreeze(0.4);addShake(0.6,10);winDelay=1.4;}
 }
 // ============ ROI DO & NHAT VAT PHAM ============
-function spawnItem(x,y,kind,tier){
-  items.push({x:clamp(x,20,W-20),y:clamp(y,20,H-20),kind:kind,tier:tier||0,t:R(0,6)});
+function spawnItem(x,y,kind,tier,qty){
+  items.push({x:clamp(x,20,W-20),y:clamp(y,20,H-20),kind:kind,tier:tier||0,qty:qty||1,t:R(0,6)});
 }
-function dropLoot(x,y,isBoss,elite){
+function dropLoot(x,y,isBoss,elite,etype){
+  // Rơi nguyên liệu theo loại quái (60% tỉ lệ, boss/elite 100%)
+  const matId=etype&&MON_DROPS[etype];
+  if(matId){
+    const chance=isBoss?1.0:elite?0.9:0.6;
+    if(Math.random()<chance){
+      const qty=isBoss?3:elite?2:1;
+      spawnItem(x+R(-20,20),y+R(-10,10),'mat',matId,qty);
+    }
+  }
   if(elite){spawnItem(x,y,'gold',RI(25,45));spawnItem(x+18,y,'gold',RI(10,20));
     if(Math.random()<0.7)spawnItem(x-18,y,'weapon',RI(0,Math.min(3,floor)));else spawnItem(x-18,y,'armor',RI(0,Math.min(3,floor)));}
   if(isBoss){
@@ -3158,6 +3398,15 @@ function pickup(it){
       addDmgNum(P.x,P.y-22,r.name+'!','#ff9ae8',true);burst(P.x,P.y,'#ff9ae8',14,140);beep(990,0.15);}
     else{P.inv.rings.push(it.tier);
       addDmgNum(P.x,P.y-22,r.name+' (túi)','#ff9ae8',false);beep(520,0.08);}
+  }else if(it.kind==='mat'){
+    const m=MATERIALS[it.tier];
+    if(m){
+      if(!SAVE.mats)SAVE.mats={};
+      SAVE.mats[it.tier]=(SAVE.mats[it.tier]||0)+(it.qty||1);
+      addDmgNum(P.x,P.y-22,m.icon+' '+m.name+' x'+(it.qty||1),'#c9a7ff',false);
+      burst(P.x,P.y,'#c9a7ff',8,100);beep(700,0.08);
+      persist();
+    }
   }
   saveGear();
 }
@@ -4093,9 +4342,11 @@ function drawEnemy(e){
   ctx.restore();
 }
 function itemName(it){
+  if(it.kind==='mat'){const m=MATERIALS[it.tier];return m?m.icon+' '+m.name:'Nguyên liệu';}
   return it.kind==='heart'?'Tim hồi máu':(it.kind==='gold'?it.tier+' vàng':(it.kind==='weapon'?WEAPONS[it.tier].name:it.kind==='ring'?RINGS[it.tier].name:ARMORS[it.tier].name));
 }
 function itemColor(it){
+  if(it.kind==='mat')return '201,167,255';
   return it.kind==='heart'?'255,90,90':(it.kind==='gold'?'232,193,90':(it.kind==='weapon'?'255,215,106':it.kind==='ring'?'255,154,232':'122,184,255'));
 }
 function drawItems(){
@@ -4107,6 +4358,10 @@ function drawItems(){
     ctx.strokeStyle='rgba('+col+',0.85)';ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(it.x,it.y-6,20,0,7);ctx.stroke();
     if(it.kind==='heart')drawSprOut(SPR.heart,Math.round(it.x-11),Math.round(y-10),22,20);
+    else if(it.kind==='mat'){const m=MATERIALS[it.tier];
+      ctx.fillStyle='#c9a7ff';ctx.beginPath();ctx.arc(it.x,y-6,9,0,7);ctx.fill();
+      ctx.fillStyle='#1a1d26';ctx.font='bold 12px Arial';ctx.textAlign='center';
+      ctx.fillText(m?m.icon:'⛏️',it.x,y-1);ctx.textAlign='left';}
     else if(it.kind==='gold'){ctx.fillStyle='#e8c15a';ctx.beginPath();ctx.arc(it.x,y-6,8,0,7);ctx.fill();
       ctx.fillStyle='#a8842a';ctx.beginPath();ctx.arc(it.x,y-6,5,0,7);ctx.fill();
       ctx.fillStyle='#ffe97a';ctx.fillRect(it.x-3,y-9,3,3);}
@@ -4142,6 +4397,11 @@ function drawHUD(){
   ctx.strokeStyle='#e8c15a';ctx.lineWidth=2;ctx.strokeRect(W-132,H-44,122,32);
   ctx.fillStyle='#e8c15a';ctx.font='bold 13px Arial';ctx.textAlign='center';
   ctx.fillText('🎒 Túi (I)',W-71,H-23);ctx.textAlign='left';
+  // Pause button
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(W-132,H-84,122,32);
+  ctx.strokeStyle='#7ab8ff';ctx.lineWidth=2;ctx.strokeRect(W-132,H-84,122,32);
+  ctx.fillStyle='#7ab8ff';ctx.font='bold 13px Arial';ctx.textAlign='center';
+  ctx.fillText('⏸ Tạm dừng (P)',W-71,H-63);ctx.textAlign='left';
   ctx.fillStyle='#fff';ctx.font='bold 14px Arial';ctx.textAlign='center';
   ctx.fillText('Tầng '+floor+' - '+floorName(floor),W/2,24);
   ctx.font='12px Arial';ctx.fillStyle='#ffb35a';
@@ -4480,6 +4740,11 @@ function drawLobbyHUD(){
   ctx.strokeStyle='#e8c15a';ctx.lineWidth=2;ctx.strokeRect(W-132,H-44,122,32);
   ctx.fillStyle='#e8c15a';ctx.font='bold 13px Arial';ctx.textAlign='center';
   ctx.fillText('🎒 Túi (I)',W-71,H-23);ctx.textAlign='left';
+  // Pause button
+  ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(W-132,H-84,122,32);
+  ctx.strokeStyle='#7ab8ff';ctx.lineWidth=2;ctx.strokeRect(W-132,H-84,122,32);
+  ctx.fillStyle='#7ab8ff';ctx.font='bold 13px Arial';ctx.textAlign='center';
+  ctx.fillText('⏸ Tạm dừng (P)',W-71,H-63);ctx.textAlign='left';
   ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(W/2-160,6,320,20);ctx.fillRect(W/2-240,28,480,20);
   ctx.fillStyle='#e8c15a';ctx.font='bold 15px Arial';ctx.textAlign='center';
   ctx.fillText('SẢNH CHỜ - LÀNG CHÂN THÁP',W/2,24);
@@ -4682,7 +4947,7 @@ function portalGo(key){
     if(floor>=100){cycle++;floor=1;}
     else floor++;
     kills=0;winDelay=0;buttons=[];winMsg='';
-    if(P){P.hp=P.maxhp;P.en=P.maxen;}
+    if(P){P.en=P.maxen;}
     genFloor(floor);mode='play';musicStart(musicForFloor(floor));sfx('portal');
     if(SAVE){SAVE.checkpoint={floor:floor,cycle:cycle};SAVE.bestFloor=Math.max(SAVE.bestFloor,floor);persist();}
   }
@@ -4699,7 +4964,7 @@ function loop(t){
   if(freezeT>0){freezeT-=dt;render();return;}
   ambT-=dt;if(ambT<=0){ambT=0.3;spawnAmbient();}
   if(mode==='title'||mode==='select'||mode==='login'||mode==='lobby')playTime+=dt;
-  if(mode==='play'&&!invOpen&&!setOpen&&!charOpen)update(dt);
+  if(mode==='play'&&!invOpen&&!setOpen&&!charOpen&&!paused)update(dt);
   if(mode==='lobby'&&!invOpen&&!setOpen&&!charOpen)updateLobby(dt);
   if(mode==='lobby')updateSeasonFx(dt);
   if(skillFx.t>0)skillFx.t-=dt;
