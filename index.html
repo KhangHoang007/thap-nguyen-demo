@@ -128,6 +128,22 @@
 .gachaSpinTxt{color:#ffd76a;font-weight:800;letter-spacing:2px;margin-bottom:12px}
 .gachaOrbs{display:flex;gap:12px;justify-content:center}
 .gorb{width:20px;height:20px;border-radius:50%;background:#5a9adf;box-shadow:0 0 14px #5a9adf;transition:background 0.12s}
+/* ===== Gacha ket qua: hinh 2D + intro lan luot xuat hien ===== */
+.gachaGrid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px;justify-content:center}
+.gcard{width:106px;padding:10px 4px 8px;text-align:center;background:#141a2e;border:2px solid #5a9adf;border-radius:10px;position:relative;overflow:hidden}
+.gcard[data-rar="purple"]{box-shadow:0 0 14px rgba(199,125,255,0.45)}
+.gcard[data-rar="orange"]{box-shadow:0 0 18px rgba(255,154,42,0.55)}
+.gcard .gimg{width:74px;height:74px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6))}
+.gcard .gnoimg{font-size:44px;line-height:74px}
+.gcard .grar{font-size:12px;font-weight:800;margin-top:4px}
+.gcard .gname{font-size:12px;font-weight:700;line-height:1.35;min-height:32px}
+.gcard .gsub{font-size:11px;color:#8a8fa3}
+.gcard.ghidden{opacity:0;transform:scale(0.3) rotateY(90deg);pointer-events:none}
+.gcard.gshow{animation:gpop 0.45s cubic-bezier(0.2,1.6,0.4,1) forwards}
+@keyframes gpop{0%{opacity:0;transform:scale(0.3) rotateY(90deg)}55%{opacity:1;transform:scale(1.14) rotateY(0)}100%{opacity:1;transform:scale(1) rotateY(0)}}
+.gcard .gshine{position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.38),transparent);transform:skewX(-20deg);pointer-events:none}
+.gcard.gshow .gshine{animation:gshine 0.9s ease 0.1s}
+@keyframes gshine{to{left:135%}}
 </style>
 <!-- Nhac nen: Kevin MacLeod (incompetech.com) - CC BY 4.0: 'Village Consort' (lang), 'Crypto' + 'Dangerous' (ham nguc), 'Five Armies' (boss) -->
 </head>
@@ -2389,23 +2405,40 @@ function gachaRoll(n){
 function gachaFinish(n){
   const pulls=[];
   for(let i=0;i<n;i++){const p=gachaPullOne(gachaBanner);gachaGive(p);pulls.push(p);}
-  saveGear();npcGold();sfx('win');
-  addDmgNum(P.x,P.y-30,'TR\u00DANG TH\u01AF\u1EDENG!', '#e8c15a',true);
-  let rh='<div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F389} K\u1EBFt qu\u1EA3 quay x'+n+':</b><br>';
-  for(const p of pulls){
-    rh+='<div style="margin:3px 0;padding:4px 8px;border:1px solid '+RAR_COL[p.rar]+';border-radius:6px;display:inline-block;margin-right:6px">'
-      +'<span style="color:'+RAR_COL[p.rar]+';font-weight:bold">'+RAR_NAME[p.rar]+'</span> '
-      +'<span style="color:'+(p.it.color||'#fff')+'">'+p.it.name+'</span>'
-      +(p.it.elem?' <span class="sub">['+p.it.elem+']</span>':'')
+  saveGear();npcGold();
+  addDmgNum(P.x,P.y-30,'TR\u00DANG TH\u01AF\u1EDENG!','#e8c15a',true);
+  let rh='<div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F39F} K\u1EBFt qu\u1EA3 quay x'+n+':</b></div><div class="gachaGrid">';
+  for(let i=0;i<pulls.length;i++){
+    const p=pulls[i];
+    const img=weaponImgURL({name:p.it.name,elem:p.it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true});
+    const pic=img?'<img class="gimg" src="'+img+'" alt="">':'<div class="gnoimg">\u{1F381}</div>';
+    rh+='<div class="gcard ghidden" data-rar="'+p.rar+'" style="border-color:'+RAR_COL[p.rar]+'"><div class="gshine"></div>'+pic
+      +'<div class="grar" style="color:'+RAR_COL[p.rar]+'">'+RAR_NAME[p.rar]+'</div>'
+      +'<div class="gname" style="color:'+(p.it.color||'#fff')+'">'+p.it.name+'</div>'
+      +(p.it.elem?'<div class="gsub">['+p.it.elem+']</div>':'')
       +'</div>';
   }
-  rh+='<br><span class="sub">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</span></div></div>';
-  (function(){const rank={blue:0,purple:1,orange:2};let best=pulls[0];for(const p of pulls)if(rank[p.rar]>rank[best.rar])best=p;const it=best.it;
-  showCongrats({img:weaponImgURL({name:it.name,elem:it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true}),name:it.name,
-   stats:(it.dmg?('Sát thương x'+it.dmg+' | Chí mạng '+Math.round((it.crit||0)*100)+'%'):('Giảm sát thương '+Math.round((it.red||0)*100)+'%'))+(it.elem?(' | Nguyên tố '+it.elem):''),
-   title:best.rar==='orange'?'🌟 HUYỀN THOẠI! 🌟':(best.rar==='purple'?'💜 CỰC PHẨM! 💜':'🎉 CHÚC MỪNG! 🎉'),
-   sub:'Vòng quay đã mang đến cho bạn '+it.name+'!'});})();
+  rh+='</div><div id="gachaFoot" class="sub" style="opacity:0;transition:opacity 0.6s">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
   renderGacha(rh);
+  const cards=document.querySelectorAll('#gachaResult .gcard');
+  let idx=0;sfx('win');
+  const iv=setInterval(function(){
+    if(idx>=cards.length){clearInterval(iv);
+      const gf=gid('gachaFoot');if(gf)gf.style.opacity='1';
+      gachaBestCongrats(pulls);return;}
+    const c=cards[idx];
+    if(c){c.classList.remove('ghidden');c.classList.add('gshow');
+      const rar=c.getAttribute('data-rar');
+      beep(rar==='orange'?880:(rar==='purple'?660:440),0.09);}
+    idx++;
+  },n>1?260:120);
+}
+function gachaBestCongrats(pulls){
+  const rank={blue:0,purple:1,orange:2};let best=pulls[0];for(const p of pulls)if(rank[p.rar]>rank[best.rar])best=p;const it=best.it;
+  showCongrats({img:weaponImgURL({name:it.name,elem:it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true}),name:it.name,
+   stats:(it.dmg?('S\u00E1t th\u01B0\u01A1ng x'+it.dmg+' | Ch\u00ED m\u1EA1ng '+Math.round((it.crit||0)*100)+'%'):('Gi\u1EA3m s\u00E1t th\u01B0\u01A1ng '+Math.round((it.red||0)*100)+'%'))+(it.elem?(' | Nguy\u00EAn t\u1ED1 '+it.elem):''),
+   title:best.rar==='orange'?'\u{1F31F} HUY\u1EC0N THO\u1EA0I! \u{1F31F}':(best.rar==='purple'?'\u{1F49C} C\u1EF0C PH\u1EA8M! \u{1F49C}':'\u{1F389} CH\u00DAC M\u1EEANG! \u{1F389}'),
+   sub:'V\u00F2ng quay \u0111\u00E3 mang \u0111\u1EBFn cho b\u1EA1n '+it.name+'!'});
 }
 function gachaPrize(el){
   const r=Math.random();
@@ -2715,8 +2748,10 @@ function buildIcons(){
   }catch(e){}
 }
 function iconImg(kind,tier){
-  const nm0=kind==='weapon'?WEAPONS[tier].name:kind==='armor'?ARMORS[tier].name:RINGS[tier].name;
-  const u2=itImg(nm0);if(u2)return u2;
+  if(tier==null||tier<0)return '';
+  const def=kind==='weapon'?WEAPONS[tier]:kind==='armor'?ARMORS[tier]:RINGS[tier];
+  if(!def)return '';
+  const u2=itImg(def.name);if(u2)return u2;
   const u=kind==='weapon'?ICON_URL.swords[tier]:kind==='armor'?ICON_URL.shields[tier]:kind==='ring'?ICON_URL.rings[tier]:null;
   return u?'<img src="'+u+'">':'';
 }
