@@ -68,7 +68,14 @@
   #invPanel h3{color:#7ab8ff;margin:0 0 4px 0;font-size:22px;letter-spacing:2px}
   #invPanel .gold{color:#e8c15a;font-weight:bold;font-size:15px;margin-bottom:8px}
   #invPanel h4{color:#7ab8ff;margin:14px 0 6px 0;font-size:14px}
-  #invPanel .row{display:flex;align-items:center;justify-content:space-between;background:#1c2233;border:1px solid #2a3048;border-radius:6px;padding:7px 10px;margin:5px 0;font-size:13px;color:#dfe3f0}
+  #invPanel .row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#1c2233;border:1px solid #2a3048;border-radius:6px;padding:7px 10px;margin:5px 0;font-size:13px;color:#dfe3f0}
+  #invPanel .row .info,#npcPanel .row .info{flex:1;min-width:0}
+  #invPanel .row>*:last-child,#npcPanel .row>*:last-child{flex-shrink:0;white-space:nowrap;display:flex;gap:4px;align-items:center}
+  .stat{display:inline-block;background:rgba(232,193,90,0.10);border:1px solid rgba(232,193,90,0.35);border-radius:10px;padding:1px 8px;margin:1px 3px 1px 0;font-size:12px;color:#ffd76a;white-space:nowrap}
+  .stat.crit{background:rgba(255,90,90,0.10);border-color:rgba(255,90,90,0.4);color:#ff9a9a}
+  .stat.hp{background:rgba(90,255,150,0.10);border-color:rgba(90,255,150,0.4);color:#9dffb3}
+  .stat.red{background:rgba(122,184,255,0.10);border-color:rgba(122,184,255,0.4);color:#a8ccff}
+  .lockTag{display:inline-block;background:rgba(255,60,40,0.14);border:1px solid #ff6a5a;border-radius:10px;padding:1px 8px;margin-left:4px;font-size:12px;color:#ff9a8a;white-space:nowrap}
   #invPanel .row .info b{color:#fff}
   #invPanel .row .sub{color:#8a8fa3;font-size:11px}
   #invPanel .row button{background:#7ab8ff;color:#141414;border:none;border-radius:5px;padding:6px 12px;font-weight:bold;cursor:pointer;font-size:12px;margin-left:6px}
@@ -1927,6 +1934,15 @@ function genLobby(){
     {id:'enhance',icon:'\u2694',name:'Thợ Cường Hóa',sub:'Nâng cấp vũ khí',x:34*TILE,y:24.5*TILE,spr:npcSprite('#2a1a3a','#c9973f')}
   ];
   for(const n of npcs)lights.push({x:n.x,y:n.y-24,r:80});
+  const NPC_LINES={
+    shop:['Keng keng! Rèn thêm cây nữa nào!','Vũ khí tốt, giá tốt đây!','Mang nguyên liệu tới, ta cường hóa cho!'],
+    trade:['Đồ cũ đổi đồ mới, hời lắm!','3 món cũ = 1 món xịn hơn nhé!','Buôn may bán đắt, đổi đồ phát tài!'],
+    quest:['Nhiệm vụ mới mỗi ngày, nhớ nhận thưởng!','Làm nhiệm vụ chăm, thưởng to lắm!'],
+    altar:['Muốn chiêu mạnh thì phải khổ luyện!','Đài kỹ năng mở rồi, vào nâng chiêu đi!'],
+    heal:['Ai bị thương thì lại đây nào!','Thuốc mới về, hiệu nghiệm lắm!','50 vàng hồi đầy máu, rẻ như cho!'],
+    gacha:['Quay là trúng, không trúng thì quay tiếp!','Vé quay đây, vận may đang chờ!'],
+    enhance:['Cường hóa lên +10, chém boss như chém chuối!','Đồ xịn không cường hóa thì phí!']};
+  for(const n of npcs){n.lines=NPC_LINES[n.id]||['Chào mừng đến làng Chân Tháp!'];n.say='';n.sayT=0;}
   villagers=[
     mkVill('Bà Cụ Bán Bánh',['Bánh bao nóng hổi đây~','Ăn no rồi hẵng leo tháp nhé!'],8,12.5,'#c9c9c9','#7a5a8a','vill-bacu'),
     mkVill('Lính Gác',['Tháp vẫn yên ắng... tạm thời.','Chuẩn bị kỹ rồi hẵng vào!'],22,5.5,'#3a2a1a','#4a5a6a','vill-linh'),
@@ -2055,6 +2071,15 @@ function updateLobby(dt){
     if(_step!==P.stepN){P.stepN=_step;
       for(let i=0;i<3;i++)parts.push({x:P.x+(P.stepN%2?8:-8)+R(-3,3),y:P.y+8,vx:R(-15,15),vy:R(-25,-5),t:0.4,life:0.4,color:'#8a8fa3',size:3});}}
   updateFx(dt);updateItems(dt);updateVillagers(dt);
+  for(const n of npcs)if(n.sayT>0)n.sayT-=dt;
+  if(!window._chatT)window._chatT=5;
+  window._chatT-=dt;
+  if(window._chatT<=0){
+    window._chatT=6+Math.random()*9;
+    const cands=villagers.concat(npcs).filter(function(c){return c.lines&&c.lines.length&&!(c.sayT>0);});
+    if(cands.length){const c=cands[Math.floor(Math.random()*cands.length)];
+      c.say=c.lines[Math.floor(Math.random()*c.lines.length)];c.sayT=4;}
+  }
   lobbyPrompt='';
   const n=nearestNpc(76);
   const nv=n?null:nearestVillager(64);
@@ -2352,6 +2377,9 @@ function doTrade(){
   renderTrade();
   npcMsg('🎉 Đổi thành công: '+nm+'!');
   burst(P.x,P.y,'#7dff9d',20,180);beep(880,0.2);
+  showCongrats({title:'🎉 TRAO ĐỔI THÀNH CÔNG! 🎉',img:weaponImgURL({name:nm,kind:nk,tier:nt}),name:nm,
+    stats:nk==='weapon'?('⚔ Sát thương +'+Math.round((WEAPONS[nt].dmg-1)*100)+'% • 🎯 Chí mạng '+Math.round(WEAPONS[nt].crit*100)+'%'):('🛡 Giảm '+Math.round(ARMORS[nt].red*100)+'% sát thương nhận'),
+    sub:'Chúc mừng! Bạn đã trao đổi thành công và nhận được '+nm+'!'});
 }
 // ============ GACHA: NHIEU BANNER + VE QUAY + BAO HIEM CAM ============
 const GACHA_BANNERS={
@@ -2694,7 +2722,12 @@ function closeItemDetail(){const ov=gid('itemDetailOv');if(ov)ov.style.display='
 function openGachaDetail(i){const p=(window._gachaPulls||[])[i];if(p)openItemDetail(p.it,p.rar,gachaBanner==='giap'?'armor':'weapon');}
 function openSpDetail(kind,idx,eq){
   const it=eq?(kind==='spw'?P.weapon:P.armorItem):((P.inv[kind]||[])[idx]);
-  if(it)openItemDetail(it,null,kind==='spw'?'weapon':'armor');
+  if(!it)return;
+  openItemDetail(it,null,kind==='spw'?'weapon':'armor');
+  if(it.elem&&!elemOk(it.elem)){
+    const bx=gid('itemDetailBox');
+    if(bx)bx.insertAdjacentHTML('afterbegin','<div style="background:rgba(255,60,40,0.15);border:1px solid #ff6a5a;border-radius:8px;padding:8px 10px;margin-bottom:10px;color:#ffb3a3;font-size:13px;line-height:1.5">\u{1F512} <b>Ch\u01B0a \u0111\u1EE7 \u0111i\u1EC1u ki\u1EC7n trang b\u1ECB</b><br>C\u1EA7n th\u1EE9c t\u1EC9nh nguy\u00EAn t\u1ED1 <b style="color:#ffd76a">'+it.elem+'</b> (th\u1EAFng boss t\u1EA7ng 20) m\u1EDBi d\u00F9ng \u0111\u01B0\u1EE3c m\u00F3n n\u00E0y.</div>');
+  }
 }
 function openBaseDetail(kind,tier){
   const def=kind==='weapon'?WEAPONS[tier]:ARMORS[tier];if(!def)return;
@@ -2770,6 +2803,30 @@ function showCongrats(o){
     w.appendChild(c);(function(el){setTimeout(function(){el.remove();},5200);})(c);}
 }
 
+function bigToast(msg,sub,color){
+  color=color||'#ffb3a3';
+  let t=gid('bigToast');
+  if(!t){t=document.createElement('div');t.id='bigToast';
+    t.style.cssText='position:fixed;left:50%;top:36%;transform:translate(-50%,-50%) scale(0.92);z-index:10001;pointer-events:none;text-align:center;opacity:0;transition:opacity .25s,transform .25s;max-width:88vw;';
+    document.body.appendChild(t);}
+  t.innerHTML='<div style="background:rgba(18,10,10,0.94);border:2px solid '+color+';border-radius:14px;padding:18px 28px;box-shadow:0 0 34px '+color+'66">'
+    +'<div id="bigToastMsg" style="font-size:21px;font-weight:900;color:'+color+';text-shadow:0 0 12px '+color+'88">'+msg+'</div>'
+    +(sub?'<div id="bigToastSub" style="font-size:14px;color:#f0e6c8;margin-top:8px;line-height:1.55">'+sub+'</div>':'')+'</div>';
+  void t.offsetWidth;
+  t.style.opacity='1';t.style.transform='translate(-50%,-50%) scale(1)';
+  clearTimeout(window._btT);
+  window._btT=setTimeout(function(){t.style.opacity='0';t.style.transform='translate(-50%,-50%) scale(0.92)';},2800);
+  try{beep(180,0.25);}catch(e){}
+}
+function powerDeltaFx(before,verb){
+  const after=calcPower(),d=after-before;
+  if(!d)return;
+  bigToast((d>0?'+':'')+d.toLocaleString('vi-VN')+' ⚔ LỰC CHIẾN',(verb||'Trang bị thành công!')+' — lực chiến '+(d>0?'tăng':'giảm'),d>0?'#7dff9d':'#ff8a8a');
+}
+function equipLocked(kind,idx){
+  const it=(kind==='spw'?P.inv.spw:P.inv.spa)[idx];if(!it)return;
+  bigToast('🔒 KHÔNG ĐỦ ĐIỀU KIỆN','Cần thức tỉnh nguyên tố <b style="color:#ffd76a">'+it.elem+'</b> (thắng boss tầng 20) mới trang bị được “'+it.name+'”!','#ff8a8a');
+}
 function renderGacha(resHtml){
   gid('npcTitle').textContent='\u{1F3A1} V\u00F2ng Quay May M\u1EAFn';
   npcGold();npcMsg('');
@@ -3378,9 +3435,10 @@ function shopBuySp(listName,idx){
   saveGear();sfx('gold');npcMsg('Đã mua '+it.name+'!');renderShop();
 }
 function shopEquipSp(kind,idx){
+  const before=calcPower();
   const r=equipSpecial(kind,idx);
-  if(r.ok){npcMsg('Đã trang bị '+r.name+'!');beep(760,0.1);renderShop();}
-  else npcMsg(r.msg||'Không trang bị được!');
+  if(r.ok){powerDeltaFx(before);beep(760,0.1);renderShop();}
+  else bigToast('\u{1F512} KH\u00D4NG \u0110\u1EE6 \u0110I\u1EC0U KI\u1EC6N',r.msg||'Kh\u00F4ng trang b\u1ECB \u0111\u01B0\u1EE3c!','#ff8a8a');
 }
 function shopSellSp(kind,idx){
   const it=P.inv[kind][idx];if(!it)return;
@@ -3390,18 +3448,22 @@ function shopSellSp(kind,idx){
 function spRow(kind,idx,equipped,forShop){
   const it=equipped?(kind==='spw'?P.weapon:P.armorItem):P.inv[kind][idx];
   const isW=kind==='spw';
-  const sub=isW?('<span class="nw">+'+Math.round((it.dmg-1)*100)+'% sát thương</span> <span class="gdot">•</span> <span class="nw">'+Math.round((it.crit||0)*100)+'% chí mạng</span>'):('<span class="nw">giảm '+Math.round(it.red*100)+'% sát thương nhận</span>');
-  const elem=it.elem?(' <span class="sub" style="color:'+(elemOk(it.elem)?'#7dff9d':'#ff8a8a')+'">['+it.elem+(elemOk(it.elem)?' ✓':' ✗')+']</span>'):'';
+  const locked=!!(it.elem&&!elemOk(it.elem));
+  const sub=isW?('<span class="stat">⚔ +'+Math.round((it.dmg-1)*100)+'%</span><span class="stat crit">🎯 '+Math.round((it.crit||0)*100)+'%</span>'):('<span class="stat red">🛡 giảm '+Math.round(it.red*100)+'%</span>');
+  const elem=it.elem?(' <span class="'+(locked?'lockTag':'stat hp')+'">'+(locked?'🔒 Cần ':'⚡ ')+it.elem+(locked?'':' ✓')+'</span>'):'';
   let btns='<button onclick="openSpDetail(\''+kind+'\','+idx+','+(equipped?1:0)+')" title="Xem chi tiết">\u{1F50D}</button>';
   if(equipped)btns+='<span class="sub" style="color:#7dff9d;font-weight:bold">✓ Đã trang bị</span> <button onclick="invUnequip(\''+(isW?'weapon':'armor')+'\')">Tháo</button>';
   else{const sp=Math.floor((it.price||100)*0.4);
     btns+=forShop?'<button onclick="shopEquipSp(\''+kind+'\','+idx+')">Trang bị</button><button onclick="shopSellSp(\''+kind+'\','+idx+')">Bán +'+sp+'</button>'
-      :'<button onclick="invEquipSp(\''+kind+'\','+idx+')">Trang bị</button><button onclick="invSellSp(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
+      :(locked?'<button onclick="equipLocked(\''+kind+'\','+idx+')" style="border-color:#ff6a5a;color:#ff9a8a" title="Chưa đủ điều kiện trang bị">🔒 Cần '+it.elem+'</button>'
+      :'<button onclick="invEquipSp(\''+kind+'\','+idx+')">Trang bị</button>')+'<button onclick="invSellSp(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
   return '<div class="row"><div class="info">'+spIcon(it)+'<b>'+it.name+'</b><br><span class="sub">'+sub+'</span>'+elem+'</div><span>'+btns+'</span></div>';
 }
 function invEquipSp(kind,idx){
+  const before=calcPower();
   const r=equipSpecial(kind,idx);
-  if(r.ok){invMsg('Đã trang bị '+r.name+'!');beep(760,0.1);}else invMsg(r.msg||'Không trang bị được!');
+  if(r.ok){powerDeltaFx(before);beep(760,0.1);if(typeof charOpen!=='undefined'&&charOpen)renderChar();}
+  else bigToast('\u{1F512} KH\u00D4NG \u0110\u1EE6 \u0110I\u1EC0U KI\u1EC6N',r.msg||'Kh\u00F4ng trang b\u1ECB \u0111\u01B0\u1EE3c!','#ff8a8a');
   renderInv();
 }
 function invSellSp(kind,idx){if(mode==='play'){invMsg('⛔ Không thể bán đồ trong tháp! Về sảnh mới bán được.');beep(220,0.15);return;}
@@ -3410,6 +3472,7 @@ function invSellSp(kind,idx){if(mode==='play'){invMsg('⛔ Không thể bán đ�
   P.inv[kind].splice(idx,1);P.gold+=pr;saveGear();invMsg('Đã bán +'+pr+' vàng!');beep(660,0.1);renderInv();
 }
 function invUnequip(kind){
+  window._upeqB=calcPower();
   if(kind==='ring'){
     if(P.ring.tier<0)return;
     P.maxhp-=P.ring.maxhp;P.hp=Math.max(1,Math.min(P.hp,P.maxhp));
@@ -3428,30 +3491,34 @@ function invUnequip(kind){
     else{P.armorItem={tier:-1,red:0,name:'Không giáp',up:0};P.armorRed=0;}
     invMsg('Đã tháo '+(kind==='weapon'?'vũ khí':'giáp')+' ra cho vào túi!');
   }
-  recalcStats();saveGear();beep(520,0.08);renderInv();
+  recalcStats();saveGear();beep(520,0.08);powerDeltaFx(window._upeqB,'\u0110\u00E3 th\u00E1o \u0111\u1ED3 ra!');if(typeof charOpen!=='undefined'&&charOpen)renderChar();renderInv();
 }
 function invSell(kind,idx){if(mode==='play'){invMsg('⛔ Không thể bán đồ trong tháp! Về sảnh mới bán được.');beep(220,0.15);return;}const pr=sellFromInv(kind,idx);invMsg('Đã bán +'+pr+' vàng!');beep(660,0.1);renderInv();}
-function invEquip(kind,idx){const nm=equipFromInv(kind,idx);invMsg('Đã trang bị '+nm+'!');beep(760,0.1);renderInv();}
+function invEquip(kind,idx){const before=calcPower();const nm=equipFromInv(kind,idx);powerDeltaFx(before);beep(760,0.1);if(typeof charOpen!=='undefined'&&charOpen)renderChar();renderInv();}
 function invRow(kind,tier,equipped,idx){
   if(tier<0)return '<div class="row"><div class="info"><span class="sub">'+(kind==='weapon'?'Chưa có vũ khí':kind==='armor'?'Chưa có giáp':'Chưa có nhẫn')+'</span></div></div>';
   const it=kind==='weapon'?WEAPONS[tier]:kind==='armor'?ARMORS[tier]:RINGS[tier];
   const nm=it.name;
-  const sub=kind==='weapon'?('<span class="nw">+'+Math.round((it.dmg-1)*100)+'% sát thương</span>'):kind==='armor'?('<span class="nw">giảm '+Math.round(it.red*100)+'% sát thương nhận</span>'):('<span class="nw">+'+Math.round(it.crit*100)+'% chí mạng</span>'+(it.maxhp?' <span class="gdot">•</span> <span class="nw">+'+it.maxhp+' HP</span>':''));
+  const sub=kind==='weapon'?('<span class="stat">⚔ +'+Math.round((it.dmg-1)*100)+'%</span>'):kind==='armor'?('<span class="stat red">🛡 giảm '+Math.round(it.red*100)+'%</span>'):('<span class="stat crit">🎯 +'+Math.round(it.crit*100)+'%</span>'+(it.maxhp?'<span class="stat hp">❤ +'+it.maxhp+'</span>':''));
   const desc=kind==='weapon'?weaponDesc(it):kind==='armor'?armorDesc(it):ringDesc(it);
   let btns=(kind==='weapon'||kind==='armor')?'<button onclick="openBaseDetail(\''+kind+'\','+tier+')" title="Xem chi tiết">\u{1F50D}</button>':'';
   if(equipped)btns+='<span class="sub" style="color:#7dff9d;font-weight:bold">✓ Đã trang bị</span> <button onclick="invUnequip(\''+kind+'\')">Tháo</button>';
   else{const sp=Math.floor((kind==='weapon'?SHOP_WPRICE:kind==='armor'?SHOP_APRICE:SHOP_RPRICE)[tier]*0.4);
     btns+='<button onclick="invEquip(\''+kind+'\','+idx+')">Trang bị</button><button onclick="invSell(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
-  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b><br><span class="sub">'+sub+'</span><br><span class="sub" style="color:#8a8fa3;font-style:italic">'+desc+'</span></div><span>'+btns+'</span></div>';
+  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b><br>'+sub+'</div><span>'+btns+'</span></div>';
 }
 function renderInv(){
   gid('invGold').innerHTML=coinImg()+' Vàng: '+P.gold;
   // Tabs
+  const _cnt={all:P.inv.weapons.length+P.inv.spw.length+P.inv.armors.length+P.inv.spa.length+P.inv.rings.length,
+    weapon:P.inv.weapons.length+P.inv.spw.length,armor:P.inv.armors.length+P.inv.spa.length,ring:P.inv.rings.length,
+    potion:POTIONS.reduce(function(a,pt){return a+(SAVE.potions[pt.id]||0);},0),
+    mat:Object.keys(SAVE.mats||{}).filter(function(k){return SAVE.mats[k]>0;}).length};
   const tabs=[['all','📦 Tất cả'],['weapon','⚔️ Vũ khí'],['armor','🛡️ Giáp'],['ring','💍 Nhẫn'],['potion','🧪 Thuốc'],['mat','⛏️ Nguyên liệu']];
-  let h='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">';
+  let h='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;position:sticky;top:0;background:#141824;z-index:3;padding:8px 0;">';
   tabs.forEach(function(t){
     const active=invTab===t[0];
-    h+='<button onclick="invTab=\''+t[0]+'\';renderInv()" style="'+(active?'background:#e8c15a;color:#1a1d26;font-weight:bold;':'')+'padding:6px 10px;font-size:13px;">'+t[1]+'</button>';
+    h+='<button onclick="invTab=\''+t[0]+'\';renderInv()" style="'+(active?'background:#e8c15a;color:#1a1d26;font-weight:bold;':'')+'padding:6px 10px;font-size:13px;">'+t[1]+' ('+_cnt[t[0]]+')</button>';
   });
   h+='</div>';
   // Equipped (always show)
@@ -3460,13 +3527,13 @@ function renderInv(){
   // Filtered inventory
   const showAll=invTab==='all';
   if(showAll||invTab==='weapon'){
-    h+='<h4>⚔️ VŨ KHÍ ('+P.inv.weapons.length+P.inv.spw.length+')</h4>';
+    h+='<h4>⚔️ VŨ KHÍ ('+(P.inv.weapons.length+P.inv.spw.length)+')</h4>';
     if(!P.inv.weapons.length&&!P.inv.spw.length)h+='<div class="row"><div class="info"><span class="sub">Chưa có vũ khí trong túi</span></div></div>';
     P.inv.weapons.forEach((t,i)=>{h+=invRow('weapon',t,false,i);});
     P.inv.spw.forEach((it,i)=>{h+=spRow('spw',i,false);});
   }
   if(showAll||invTab==='armor'){
-    h+='<h4>🛡️ GIÁP ('+P.inv.armors.length+P.inv.spa.length+')</h4>';
+    h+='<h4>🛡️ GIÁP ('+(P.inv.armors.length+P.inv.spa.length)+')</h4>';
     if(!P.inv.armors.length&&!P.inv.spa.length)h+='<div class="row"><div class="info"><span class="sub">Chưa có giáp trong túi</span></div></div>';
     P.inv.armors.forEach((t,i)=>{h+=invRow('armor',t,false,i);});
     P.inv.spa.forEach((it,i)=>{h+=spRow('spa',i,false);});
@@ -5279,6 +5346,16 @@ function drawNpcs(){
       ctx.beginPath();ctx.ellipse(bx,by+6,21+4*pl,8+2*pl,0,0,7);ctx.stroke();}
     drawNpcFigure(n);
     drawNpcPlate(n,near===n);
+    if(n.sayT>0&&n.say){
+      const nx=Math.round(n.x),ny=Math.round(n.y);
+      ctx.font='12px Arial';ctx.textAlign='center';
+      const sw=ctx.measureText(n.say).width+18;
+      const bxx=nx-sw/2,byy=ny-138;
+      ctx.fillStyle='rgba(255,253,240,0.95)';rrPath(bxx,byy,sw,22,8);ctx.fill();
+      ctx.strokeStyle='#8a6d2a';ctx.lineWidth=1;rrPath(bxx,byy,sw,22,8);ctx.stroke();
+      ctx.fillStyle='#3a2a1a';ctx.fillText(n.say,nx,byy+15);
+      ctx.textAlign='left';
+    }
   }
   for(const v of villagers)drawVillager(v);
   drawPortalFx();
