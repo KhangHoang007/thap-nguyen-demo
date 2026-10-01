@@ -1814,7 +1814,11 @@ function updateVillagers(dt){
       if(d<4){v.state='idle';v.t=R(1,3.5);}
       else{
         const s=(v.dog?70:42)*dt,nx=v.x+dx/d*s,ny=v.y+dy/d*s;
-        if(villTileOk(nx,ny)){v.x=nx;v.y=ny;v.face=dx>=0?1:-1;}
+        if(villTileOk(nx,ny)){v.x=nx;v.y=ny;v.face=dx>=0?1:-1;
+          const _vs=Math.floor(playTime*10/Math.PI);
+          if(_vs!==v.stepN){v.stepN=_vs;
+            parts.push({x:v.x+R(-4,4),y:v.y+4,vx:R(-10,10),vy:R(-20,-5),t:0.35,life:0.35,color:'#8a8fa3',size:2});
+            parts.push({x:v.x+R(-4,4),y:v.y+4,vx:R(-10,10),vy:R(-20,-5),t:0.35,life:0.35,color:'#8a8fa3',size:2});}}
         else{v.state='idle';v.t=R(1,2);}
       }
     }
@@ -1838,6 +1842,8 @@ function drawVillager(v){
   const w=40*sc,h=50*sc;
   ctx.save();
   if(v.face<0&&!v.dog){ctx.translate(x,y-bob);ctx.scale(-1,1);ctx.translate(-x,-(y-bob));}
+  const _br=Math.sin(playTime*2+v.hx);
+  ctx.translate(x,y+4);ctx.scale(1-0.01*_br,1+0.015*_br);ctx.translate(-x,-(y+4));
   var _vc=v.img&&typeof VILL_CANV!=='undefined'?VILL_CANV[v.img]:null;
   if(_vc&&_vc.width){var _vh=62*sc,_vw=_vh*_vc.width/_vc.height;drawSprOut(_vc,Math.round(x-_vw/2),Math.round(y-bob-_vh+6),Math.round(_vw),Math.round(_vh));}
   else if(v.dog)drawDog(x,y-bob,sc);
@@ -1865,8 +1871,10 @@ function updateLobby(dt){
     if(b.k==='regen')P.hp=Math.min(P.maxhp,P.hp+P.maxhp*b.v*dt);}
   updatePlayerMove(dt);
   P.cur=P.moving?Math.floor(P.walkT*9)%4:0;
-  if(P.moving){P.walkT+=dt;P.dustT+=dt;
-    if(P.dustT>0.22){P.dustT=0;parts.push({x:P.x+R(-6,6),y:P.y+8,vx:R(-15,15),vy:R(-25,-5),t:0.4,life:0.4,color:'#8a8fa3',size:3});}}
+  if(P.moving){P.walkT+=dt;
+    const _step=Math.floor(P.walkT*9/Math.PI);
+    if(_step!==P.stepN){P.stepN=_step;
+      for(let i=0;i<3;i++)parts.push({x:P.x+(P.stepN%2?8:-8)+R(-3,3),y:P.y+8,vx:R(-15,15),vy:R(-25,-5),t:0.4,life:0.4,color:'#8a8fa3',size:3});}}
   updateFx(dt);updateItems(dt);updateVillagers(dt);
   lobbyPrompt='';
   const n=nearestNpc(76);
@@ -2919,7 +2927,7 @@ function newPlayer(raceIdx){
     armor:0,baseDmg:1,pending:[],delayedSkills:[],
     cd:[0,0],buffs:[],shield:0,shieldT:0,slowT:0,ifr:0,atkCd:0,bubbleT:0,landT:0,
     dash:null,leap:null,slashFx:[],shocks:[],
-    frames:buildWalkFrames(heroFrame(rc)),cur:0,walkT:0,moving:false,dustT:0,
+    frames:buildWalkFrames(heroFrame(rc)),cur:0,walkT:0,moving:false,dustT:0,stepN:-1,
     weapon:{tier:-1,dmg:1,crit:0,name:'Tay không',up:0},armorItem:{tier:-1,red:0,name:'Không giáp',up:0},armorRed:0,ring:{tier:-1,crit:0,maxhp:0,name:'Không nhẫn',up:0},
     gold:120,inv:{weapons:[],armors:[],rings:[],spw:[],spa:[]},skillUp:{s1:0,s2:0}};
   if(rc.id==='nhan'){P.enRegen*=1.3;}
@@ -2998,7 +3006,7 @@ function hurtEnemy(e,dmg,o){
   if(o.forceCrit){crit=true;mul=2.5;}
   else if(Math.random()<P.critCh+(P.weapon?P.weapon.crit:0)+(P.ring?P.ring.crit:0)){crit=true;mul=P.critMul;}
   const dd=Math.round(dmg*mul);
-  e.hp-=dd;sfx('hit');
+  e.hp-=dd;e.sqT=0.18;sfx('hit');
   if(P.awk==='am'&&dd>0)P.hp=Math.min(P.maxhp,P.hp+dd*0.08);
   if(P.awk==='huyet'&&dd>0)P.hp=Math.min(P.maxhp,P.hp+dd*0.14);
   if(P.awk==='bang')e.slowT=1.5;
@@ -3225,8 +3233,10 @@ function update(dt){
   if(P.race.id==='linhhon'&&Math.random()<dt*4)
     parts.push({x:P.x+R(-8,8),y:P.y+R(-6,10),vx:R(-10,10),vy:R(-30,-10),t:0.7,life:0.7,color:'#8ff5ff',size:3});
   updatePlayerMove(dt);
-  if(P.moving){P.walkT+=dt;P.dustT+=dt;
-    if(P.dustT>0.22){P.dustT=0;parts.push({x:P.x+R(-6,6),y:P.y+8,vx:R(-15,15),vy:R(-25,-5),t:0.4,life:0.4,color:'#8a8fa3',size:3});}}
+  if(P.moving){P.walkT+=dt;
+    const _step=Math.floor(P.walkT*9/Math.PI);
+    if(_step!==P.stepN){P.stepN=_step;
+      for(let i=0;i<3;i++)parts.push({x:P.x+(P.stepN%2?8:-8)+R(-3,3),y:P.y+8,vx:R(-15,15),vy:R(-25,-5),t:0.4,life:0.4,color:'#8a8fa3',size:3});}}
   P.cur=P.moving?Math.floor(P.walkT*9)%4:0;
   for(let i=P.pending.length-1;i>=0;i--){const s=P.pending[i];s.t-=dt;
     if(s.t<=0){P.slashFx.push({a:s.a,t:0.15,range:s.range,arc:s.arc,color:s.color});
@@ -3286,6 +3296,7 @@ function updateEnemies(dt){
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];
     if(e.hp<=0){enemies.splice(i,1);continue;}
+    if(e.sqT>0)e.sqT-=dt;
     if(e.atkCd>0)e.atkCd-=dt;
     if(e.stunT>0){e.stunT-=dt;continue;}
     if(e.bleed){e.bleed.t-=dt;e.hp-=e.bleed.dps*dt;
@@ -3300,6 +3311,10 @@ function updateEnemies(dt){
     for(const d of decoys){const dd=dist(e.x,e.y,d.x,d.y);if(dd<bd){bd=dd;tx=d.x;ty=d.y;decoy=d;}}
     const sp=e.spd*(e.slowT>0?0.6:1);
     const a=Math.atan2(ty-e.y,tx-e.x);e.faceA=a;e.face=Math.cos(a)>=0?1:-1;e.flap+=dt*10;
+    if(e.type==='rat'||e.type==='minirat'){const _hs2=Math.sin(e.flap*2);
+      if(e.hopS!==undefined&&((e.hopS>0&&_hs2<=0)||(e.hopS<0&&_hs2>=0)))e.landT=0.14;
+      e.hopS=_hs2;}
+    if(e.landT>0)e.landT-=dt;
     if(bd>e.r+13)tryMove(e,Math.cos(a)*sp*dt,Math.sin(a)*sp*dt);
     else if(e.atkCd<=0){
       if(decoy){decoy.t-=0.6;burst(decoy.x,decoy.y,'#c9a7ff',6,100);}
@@ -3841,8 +3856,13 @@ function drawPlayer(){
   const alpha=rc.id==='linhhon'?0.88:1;
   let lx=0,ly=0;
   if(P.atkCd>0.22&&(P.fx||P.fy)){lx=P.fx*6;ly=P.fy*4;}
-  if(P.landT>0){const sq=P.landT/0.16;
-    ctx.save();ctx.translate(x,y+10);ctx.scale(1+0.14*sq,1-0.16*sq);ctx.translate(-x,-(y+10));
+  let sx=1,sy=1;
+  if(P.landT>0){const sq=P.landT/0.16;sx=1+0.14*sq;sy=1-0.16*sq;}
+  else if(P.atkCd>0.25){sx=1.05;sy=0.95;}
+  else if(P.moving){const wk=Math.abs(Math.cos(P.walkT*9));sx=1+0.03*wk;sy=1-0.03*wk;}
+  else sy=1+0.01*Math.sin(playTime*3);
+  if(sx!==1||sy!==1){
+    ctx.save();ctx.translate(x,y+10);ctx.scale(sx,sy);ctx.translate(-x,-(y+10));
     drawHeroAt(x+lx,y-bob+ly,rc,P.frames[P.cur],alpha);ctx.restore();}
   else drawHeroAt(x+lx,y-bob+ly,rc,P.frames[P.cur],alpha);
   if(P.shieldT>0){ctx.strokeStyle='#bfe3ff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,17,0,7);ctx.stroke();}
@@ -3865,6 +3885,10 @@ function drawEnemy(e){
   ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.8,e.r,e.r*0.4,0,0,7);ctx.fill();
   ctx.save();
   if(e.face<0){ctx.translate(Math.round(e.x),0);ctx.scale(-1,1);ctx.translate(-Math.round(e.x),0);}
+  let _sx=1,_sy=1;
+  if(e.sqT>0){const _k=e.sqT/0.18;_sx*=1+0.18*_k;_sy*=1-0.22*_k;}
+  if(e.landT>0){const _l=e.landT/0.14;_sx*=1+0.12*_l;_sy*=1-0.14*_l;}
+  if(_sx!==1||_sy!==1){const _fy=e.y+e.r*0.8;ctx.translate(e.x,_fy);ctx.scale(_sx,_sy);ctx.translate(-e.x,-_fy);}
   if(e.isBoss){
     const bobY=Math.sin(playTime*2)*3;
     if(BC){drawSprOut(BC,Math.round(e.x-42),Math.round(e.y-160+bobY),84,168);}
@@ -4019,9 +4043,10 @@ function questClaimable(){try{return SAVE&&QUESTS.some(function(q){return qUnloc
 function drawNpcFigure(n){
   const _nc=NPC_CANV[n.id];
   if(_nc&&_nc.width){
-    const _bob=Math.sin(playTime*2.2+n.x*0.3)*1.5,_h=84,_w=Math.max(1,Math.round(84*_nc.width/_nc.height));
+    const _bob=Math.sin(playTime*2.2+n.x*0.3)*1.5,_br=Math.sin(playTime*2+n.x),
+      _h=84*(1+0.015*_br),_w=Math.max(1,Math.round(84*(1-0.01*_br)*_nc.width/_nc.height));
     ctx.fillStyle='rgba(0,0,0,0.35)';ctx.beginPath();ctx.ellipse(Math.round(n.x),Math.round(n.y+3),15,5,0,0,7);ctx.fill();
-    ctx.drawImage(_nc,Math.round(n.x-_w/2),Math.round(n.y-_h+_bob),_w,_h);
+    ctx.drawImage(_nc,Math.round(n.x-_w/2),Math.round(n.y-_h+_bob),Math.round(_w),Math.round(_h));
     return;
   }
   const x=n.x,y=n.y,bob=Math.round(Math.sin(playTime*2.2+n.x*0.3)*1.5);
@@ -4033,6 +4058,8 @@ function drawNpcFigure(n){
   function eyes(cx,ty,w,dy){
     R(cx-w*0.30,ty+dy,3,4,'#141414');R(cx+w*0.30-3,ty+dy,3,4,'#141414');
     R(cx-w*0.30,ty+dy,1,1,'#ffffff');R(cx+w*0.30-3,ty+dy,1,1,'#ffffff');}
+  const _br2=Math.sin(playTime*2+n.x);
+  ctx.save();ctx.translate(x,y);ctx.scale(1-0.01*_br2,1+0.015*_br2);ctx.translate(-x,-y);
   if(n.id==='shop'){
     // ---- đe rèn bên trái ----
     S(x-36,y-16,19,10,'#5a6272');R(x-36,y-16,19,3,'#8a93a8');
@@ -4212,6 +4239,7 @@ function drawNpcFigure(n){
       ctx.fillStyle='rgba(210,250,255,0.85)';
       ctx.fillRect(Math.round(x+Math.cos(a3)*23-1),Math.round(fy+Math.sin(a3)*11-1),3,3);}
   }
+  ctx.restore();
 }
 function drawNpcPlate(n,isNear){
   ctx.font='bold 13px Arial';ctx.textAlign='center';
