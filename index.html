@@ -200,6 +200,24 @@
 .gcard .gshine{position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.38),transparent);transform:skewX(-20deg);pointer-events:none}
 .gcard.gshow .gshine{animation:gshine 0.9s ease 0.1s}
 @keyframes gshine{to{left:135%}}
+/* ===== Fix wrap tuido + Gacha wow v2 ===== */
+.nw{white-space:nowrap}
+.gdot{color:#5a6376}
+.gachaStage{position:relative;border-radius:12px;padding:10px 4px;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#1c2340 0%,#0b0d17 72%)}
+.gachaStage::before{content:'';position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent 0deg,rgba(232,193,90,0.08) 12deg,transparent 26deg,rgba(199,125,255,0.08) 40deg,transparent 54deg,rgba(90,154,223,0.08) 68deg,transparent 82deg,rgba(232,193,90,0.08) 96deg,transparent 110deg,rgba(199,125,255,0.08) 124deg,transparent 138deg,rgba(90,154,223,0.08) 152deg,transparent 166deg);animation:gstage 16s linear infinite;pointer-events:none}
+@keyframes gstage{to{transform:rotate(360deg)}}
+.gachaStage .gachaGrid{position:relative;z-index:1}
+@keyframes gdeal{from{transform:scale(0) rotate(-24deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.gcard{animation:gdeal .5s cubic-bezier(.2,1.4,.4,1) backwards}
+.gshock{position:absolute;inset:-4px;border:3px solid;border-radius:14px;pointer-events:none;z-index:6;animation:gshockA .65s ease-out forwards}
+@keyframes gshockA{from{transform:scale(.55);opacity:1}to{transform:scale(1.9);opacity:0}}
+.gflash{position:fixed;inset:0;pointer-events:none;z-index:9990;animation:gflashA .55s ease-out forwards}
+@keyframes gflashA{from{opacity:1}to{opacity:0}}
+.gshake{animation:gshakeA .5s}
+@keyframes gshakeA{0%,100%{transform:translate(0,0)}20%{transform:translate(-7px,3px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,3px)}}
+.gtense{filter:brightness(.5) saturate(1.5)}
+.gtense::after{content:'\203C';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;z-index:5;pointer-events:none;animation:gtenseP .45s ease-in-out infinite alternate}
+@keyframes gtenseP{from{transform:scale(.8);opacity:.55}to{transform:scale(1.18);opacity:1}}
 </style>
 <!-- Nhac nen: Kevin MacLeod (incompetech.com) - CC BY 4.0: 'Village Consort' (lang), 'Crypto' + 'Dangerous' (ham nguc), 'Five Armies' (boss) -->
 </head>
@@ -2390,7 +2408,36 @@ const WEAPON_FLAVOR={
 'Lôi Đình Kiếm':'Từng hứng trọn chín đạo thiên lôi trên đỉnh tháp. Mỗi nhát chém kèm theo tiếng sấm rền vang.',
 'Quang Minh Kiếm':'Được ban phước tại Thánh Điện Ánh Sáng. Lưỡi kiếm trắng muốt, là khắc tinh của mọi thế lực bóng tối.',
 'Ám Ảnh Kiếm':'Rèn trong vực sâu không ánh sáng. Lưỡi kiếm nuốt chửng ánh đèn xung quanh, chém ra toàn là bóng tối.',
-'Băng Phách Kiếm':'Rèn từ băng phách vạn năm ở hang sâu tầng dưới. Lạnh đến mức đóng băng cả không khí quanh lưỡi kiếm.'
+'Băng Phách Kiếm':'Rèn từ băng phách vạn năm ở hang sâu tầng dưới. Lạnh đến mức đóng băng cả không khí quanh lưỡi kiếm.',
+'Thương Hắc Ám':'Rèn từ kim loại của thiên thạch đêm. Mũi thương hút ánh sáng xung quanh, đâm trúng là bóng tối lan vào vết thương.',
+'Đao Phong Thần':'Được Phong Thần chúc phúc trong cơn bão ngàn năm có một. Nhẹ như gió mà chém nhanh hơn cả chớp mắt.',
+'Kiếm Địa Chấn':'Rèn từ lõi đá của ngọn núi rung chuyển. Mỗi nhát chém dội xuống như một trận động đất thu nhỏ.',
+'Kiếm Thủy Long':'Lấy cảm hứng từ Thủy Long canh giữ tầng sâu. Lưỡi kiếm uốn lượn như sóng, đánh đâu cuốn đó.',
+'Song Đao Huyết Nguyệt':'Cặp song đao nhuộm máu dưới ánh trăng đỏ. Càng khát máu lưỡi đao càng sắc — tương truyền chúng tự tìm đến chủ nhân khát chiến.',
+'Trọng Kiếm Nham Thạch':'Khối nham thạch nguội được rèn thành kiếm. Nặng trịch, một nhát đủ nghiền nát khiên sắt.',
+'Kiếm Độc Xà':'Ngâm trong nọc của Xà Vương suốt ba năm. Vết chém nhỏ cũng khiến nọc độc lan khắp cơ thể.',
+'Đao Quỷ Diện':'Mặt quỷ khắc trên lưỡi đao trợn mắt mỗi khi chém. Kẻ yếu bóng vía nhìn thấy là run rẩy buông vũ khí.',
+'Kiếm Gỗ Tân Thủ':'Thanh kiếm gỗ đầu đời của mọi mạo hiểm giả. Ai cũng từng vung nó tập chém bù nhìn ở sân làng.',
+'Dao Găm Cùn':'Con dao găm đã cùn nhưng vẫn trung thành. Mài lại là dùng tốt — Thợ Rèn bảo thế.',
+'Kiếm Đồng Xanh':'Kiếm đồng phủ lớp gỉ xanh cổ kính. Cổ thì cổ, chém vẫn đau.',
+'Đao Thép Mẻ':'Lưỡi đao mẻ một miếng vì đỡ đòn cho chủ cũ. Vết mẻ ấy là huân chương của nó.',
+'Kiếm Sắt Cũ':'Kiếm sắt đã qua nhiều đời chủ. Cán kiếm bóng loáng vì mồ hôi của bao người.',
+'Đao Thợ Săn':'Đao của thợ săn rừng Chân Tháp. Đã xẻ thịt không biết bao nhiêu con thú rừng.',
+'Kiếm Lính Đánh Thuê':'Kiếm tiêu chuẩn của lính đánh thuê. Không hoa hòe, chỉ có hiệu quả.',
+'Thương Gỗ Cứng':'Thương làm từ gỗ lim trăm năm. Cứng như sắt mà nhẹ hơn nhiều.',
+'Đao Rừng Xanh':'Đao tẩm nhựa cây rừng, lưỡi xanh biếc. Thợ săn bảo đao này có mùi của rừng.',
+'Kiếm Sương Mù':'Rèn trong buổi sớm sương mù giăng kín. Lưỡi kiếm mờ ảo như chính màn sương ấy.',
+'Song Chủy Thủ':'Cặp chủy thủ song sinh, một dài một ngắn. Đánh nhanh như chớp giật hai lần.',
+'Kiếm Đá Cổ':'Kiếm đẽo từ đá cổ trong hang sâu. Thô kệch nhưng bền đến lạ.',
+'Đao Gió Nhẹ':'Lưỡi đao mỏng đến mức vung lên chỉ nghe tiếng gió thoảng.',
+'Kiếm Lửa Nhỏ':'Chứa một đốm lửa nhỏ xíu. Đừng coi thường — đốm lửa nhỏ cũng đủ thắp sáng cả hang tối.',
+'Thương Sét Nhỏ':'Đầu thương hay tích điện vào ngày giông. Chạm vào tê tê như bị kiến cắn.',
+'Kiếm Băng Vụn':'Ghép từ những mảnh băng vỡ. Sắc lạnh, nhưng cẩn thận kẻo gãy.',
+'Đao Độc Tím':'Lưỡi đao ánh tím vì tẩm thảo dược độc. Thợ Rèn dặn: đừng liếm thử.',
+'Kiếm Hắc Thiết':'Rèn từ hắc thiết khai thác ở tầng sâu. Đen tuyền, nặng tay, chém êm ru.',
+'Thương Quang Nhỏ':'Đầu thương mạ một lớp bụi ánh sáng. Trong hang tối, nó tự phát ra ánh lấp lánh.',
+'Kiếm Phong Lôi':'Gió và sấm cùng trú trong một lưỡi kiếm. Vung lên nghe vừa vù vừa đì đùng.',
+'Kiếm Hiệp Sĩ':'Kiếm của hiệp sĩ tập sự đã thề bảo vệ làng Chân Tháp. Sáng bóng vì được lau mỗi ngày.'
 };
 const ARMOR_FLAVOR={
 'Giáp Vải':'Giáp vải thô của tân thủ. Mỏng nhưng còn hơn không.',
@@ -2706,7 +2753,12 @@ function showGachaCardG(c){
   if(!c||!c.classList)return;
   c.classList.remove('ghidden');c.classList.add('gshow');
   const rar=c.getAttribute('data-rar');
-  if(rar!=='orange')beep(rar==='purple'?660:440,0.09);
+  const nRev=(typeof revealedG!=='undefined'&&revealedG.filter)?revealedG.filter(Boolean).length:1;
+  if(rar!=='orange')beep((rar==='purple'?520:380)+nRev*26,0.09);
+  const rc=(typeof RAR_COL!=='undefined'&&RAR_COL[rar])||'#fff';
+  const sh=document.createElement('div');sh.className='gshock';sh.style.borderColor=rc;c.appendChild(sh);setTimeout(function(){sh.remove();},700);
+  const fl=document.createElement('div');fl.className='gflash';fl.style.background='radial-gradient(circle,'+rc+'66,transparent 70%)';document.body.appendChild(fl);setTimeout(function(){fl.remove();},550);
+  if(rar==='orange'){const gr=gid('gachaResult');if(gr){gr.classList.remove('gshake');void gr.offsetWidth;gr.classList.add('gshake');}}
   const sp=c.querySelector('.gsparks');
   if(sp){for(let k=0;k<10;k++){const s=document.createElement('span');s.className='gspark';
     const an=Math.random()*6.283,ds=30+Math.random()*40;
@@ -2717,13 +2769,13 @@ function showGachaCardG(c){
 function gachaFinish(n){
   const pulls=window._gachaPulls||[];
   addDmgNum(P.x,P.y-30,'TR\u00DANG TH\u01AF\u1EDENG!','#e8c15a',true);
-  let rh='<button id="gachaSkip" onclick="gachaSkip()">\u23E9 B\u1ECE QUA</button><div style="clear:both"></div><div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F39F} K\u1EBFt qu\u1EA3 quay x'+n+':</b> <span class="sub">— b\u1EA5m v\u00E0o th\u1EBB \u00FAp \u0111\u1EC3 l\u1EADt ngay, b\u1EA5m th\u1EBB \u0111\u00E3 m\u1EDF \u0111\u1EC3 xem chi ti\u1EBFt</span></div><div class="gachaGrid">';
+  let rh='<button id="gachaSkip" onclick="gachaSkip()">\u23E9 B\u1ECE QUA</button><div style="clear:both"></div><div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F39F} K\u1EBFt qu\u1EA3 quay x'+n+':</b> <span class="sub">— b\u1EA5m v\u00E0o th\u1EBB \u00FAp \u0111\u1EC3 l\u1EADt ngay, b\u1EA5m th\u1EBB \u0111\u00E3 m\u1EDF \u0111\u1EC3 xem chi ti\u1EBFt</span></div><div class="gachaStage"><div class="gachaGrid">';
   for(let i=0;i<pulls.length;i++){
     const p=pulls[i];
     const img=weaponImgURL({name:p.it.name,elem:p.it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true});
     const pic=img?'<img class="gimg" src="'+img+'" alt="">':'<div class="gnoimg">\u{1F381}</div>';
     const isNew=p.isNew?'<div class="gnew">M\u1EDAI!</div>':'';
-    rh+='<div class="gcard ghidden" data-rar="'+p.rar+'" onclick="gachaTapCard('+i+')">'
+    rh+='<div class="gcard ghidden" data-rar="'+p.rar+'" style="animation-delay:'+(i*0.07)+'s" onclick="gachaTapCard('+i+')">'
       +'<div class="gbeam" style="background:linear-gradient(to top,'+RAR_COL[p.rar]+',transparent)"></div>'
       +'<div class="gflip">'
       +'<div class="gface gback"><div class="gback-orb">\u{1F300}</div><div class="gback-txt">B\u1EA4M \u0110\u1EC2 L\u1EACp</div></div>'
@@ -2734,15 +2786,20 @@ function gachaFinish(n){
       +(p.it.elem?'<div class="gsub">['+p.it.elem+']</div>':'')
       +'</div></div>'+isNew+'</div>';
   }
-  rh+='</div><div id="gachaFoot" class="sub" style="opacity:0;transition:opacity 0.6s">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
+  rh+='</div><div id="gachaTally" class="sub" style="text-align:center;margin-top:8px;position:relative;z-index:1"></div></div><div id="gachaFoot" class="sub" style="opacity:0;transition:opacity 0.6s">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
   renderGacha(rh);
   const seq=++gachaSeq;seqG=seq;
   const cards=document.querySelectorAll('#gachaResult .gcard');
   revealedG=new Array(cards.length).fill(false);
   sfx('win');
+  const gRank={blue:0,purple:1,orange:2};
+  const gOrder=[];for(let oi=0;oi<pulls.length;oi++)gOrder.push(oi);
+  gOrder.sort(function(a,b){return gRank[pulls[a].rar]-gRank[pulls[b].rar];});
   function gachaDone(){
     const sk=gid('gachaSkip');if(sk)sk.remove();
     const gf=gid('gachaFoot');if(gf)gf.style.opacity='1';
+    const tc={blue:0,purple:0,orange:0};pulls.forEach(function(p){tc[p.rar]=(tc[p.rar]||0)+1;});
+    const tl=gid('gachaTally');if(tl)tl.innerHTML='\u{1F535} Th\u01B0\u1EDDng x'+tc.blue+' &nbsp; \u{1F7E3} C\u1EF1c ph\u1EA9m x'+tc.purple+' &nbsp; \u{1F7E0} Huy\u1EC1n tho\u1EA1i x'+tc.orange;
     gachaBestCongrats(pulls);
   }
   function revealNext(){
@@ -2750,11 +2807,17 @@ function gachaFinish(n){
     if(window._gachaSkip){window._gachaSkip=false;
       for(let i=0;i<cards.length;i++)if(!revealedG[i]){revealedG[i]=true;showGachaCardG(cards[i]);}
       gachaDone();return;}
-    const i=revealedG.findIndex(r=>!r);
-    if(i<0){gachaDone();return;}
+    const i=gOrder.find(function(o){return !revealedG[o];});
+    if(i===undefined||i<0){gachaDone();return;}
     revealedG[i]=true;
     const c=cards[i],p=pulls[i];
-    if(p&&p.rar==='orange'){gachaCine(p,function(){if(seq!==gachaSeq)return;showGachaCardG(c);setTimeout(revealNext,200);});return;}
+    if(p&&p.rar==='orange'){
+      const grid=c.closest?c.closest('.gachaStage'):null;
+      if(grid)grid.classList.add('gtense');
+      beep(130,0.28);setTimeout(function(){beep(130,0.34);},340);
+      setTimeout(function(){if(grid)grid.classList.remove('gtense');if(seq!==gachaSeq)return;
+        gachaCine(p,function(){if(seq!==gachaSeq)return;showGachaCardG(c);setTimeout(revealNext,200);});},1000);
+      return;}
     showGachaCardG(c);
     setTimeout(revealNext,n>1?300:150);
   }
@@ -3229,14 +3292,14 @@ function shopSellSp(kind,idx){
 function spRow(kind,idx,equipped,forShop){
   const it=equipped?(kind==='spw'?P.weapon:P.armorItem):P.inv[kind][idx];
   const isW=kind==='spw';
-  const sub=isW?('+'+Math.round((it.dmg-1)*100)+'% sát thương • '+Math.round((it.crit||0)*100)+'% chí mạng'):('giảm '+Math.round(it.red*100)+'% sát thương nhận');
+  const sub=isW?('<span class="nw">+'+Math.round((it.dmg-1)*100)+'% sát thương</span> <span class="gdot">•</span> <span class="nw">'+Math.round((it.crit||0)*100)+'% chí mạng</span>'):('<span class="nw">giảm '+Math.round(it.red*100)+'% sát thương nhận</span>');
   const elem=it.elem?(' <span class="sub" style="color:'+(elemOk(it.elem)?'#7dff9d':'#ff8a8a')+'">['+it.elem+(elemOk(it.elem)?' ✓':' ✗')+']</span>'):'';
   let btns='<button onclick="openSpDetail(\''+kind+'\','+idx+','+(equipped?1:0)+')" title="Xem chi tiết">\u{1F50D}</button>';
   if(equipped)btns+='<span class="sub" style="color:#7dff9d;font-weight:bold">✓ Đã trang bị</span> <button onclick="invUnequip(\''+(isW?'weapon':'armor')+'\')">Tháo</button>';
   else{const sp=Math.floor((it.price||100)*0.4);
     btns+=forShop?'<button onclick="shopEquipSp(\''+kind+'\','+idx+')">Trang bị</button><button onclick="shopSellSp(\''+kind+'\','+idx+')">Bán +'+sp+'</button>'
       :'<button onclick="invEquipSp(\''+kind+'\','+idx+')">Trang bị</button><button onclick="invSellSp(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
-  return '<div class="row"><div class="info">'+spIcon(it)+'<b>'+it.name+'</b> <span class="sub">'+sub+'</span>'+elem+'</div><span>'+btns+'</span></div>';
+  return '<div class="row"><div class="info">'+spIcon(it)+'<b>'+it.name+'</b><br><span class="sub">'+sub+'</span>'+elem+'</div><span>'+btns+'</span></div>';
 }
 function invEquipSp(kind,idx){
   const r=equipSpecial(kind,idx);
@@ -3275,13 +3338,13 @@ function invRow(kind,tier,equipped,idx){
   if(tier<0)return '<div class="row"><div class="info"><span class="sub">'+(kind==='weapon'?'Chưa có vũ khí':kind==='armor'?'Chưa có giáp':'Chưa có nhẫn')+'</span></div></div>';
   const it=kind==='weapon'?WEAPONS[tier]:kind==='armor'?ARMORS[tier]:RINGS[tier];
   const nm=it.name;
-  const sub=kind==='weapon'?('+'+Math.round((it.dmg-1)*100)+'% sát thương'):kind==='armor'?('giảm '+Math.round(it.red*100)+'% sát thương nhận'):('+'+Math.round(it.crit*100)+'% chí mạng'+(it.maxhp?' • +'+it.maxhp+' HP':''));
+  const sub=kind==='weapon'?('<span class="nw">+'+Math.round((it.dmg-1)*100)+'% sát thương</span>'):kind==='armor'?('<span class="nw">giảm '+Math.round(it.red*100)+'% sát thương nhận</span>'):('<span class="nw">+'+Math.round(it.crit*100)+'% chí mạng</span>'+(it.maxhp?' <span class="gdot">•</span> <span class="nw">+'+it.maxhp+' HP</span>':''));
   const desc=kind==='weapon'?weaponDesc(it):kind==='armor'?armorDesc(it):ringDesc(it);
   let btns=(kind==='weapon'||kind==='armor')?'<button onclick="openBaseDetail(\''+kind+'\','+tier+')" title="Xem chi tiết">\u{1F50D}</button>':'';
   if(equipped)btns+='<span class="sub" style="color:#7dff9d;font-weight:bold">✓ Đã trang bị</span> <button onclick="invUnequip(\''+kind+'\')">Tháo</button>';
   else{const sp=Math.floor((kind==='weapon'?SHOP_WPRICE:kind==='armor'?SHOP_APRICE:SHOP_RPRICE)[tier]*0.4);
     btns+='<button onclick="invEquip(\''+kind+'\','+idx+')">Trang bị</button><button onclick="invSell(\''+kind+'\','+idx+')">Bán +'+sp+'</button>';}
-  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b> <span class="sub">'+sub+'</span><br><span class="sub" style="color:#8a8fa3;font-style:italic">'+desc+'</span></div><span>'+btns+'</span></div>';
+  return '<div class="row"><div class="info">'+iconImg(kind,tier)+'<b>'+nm+'</b><br><span class="sub">'+sub+'</span><br><span class="sub" style="color:#8a8fa3;font-style:italic">'+desc+'</span></div><span>'+btns+'</span></div>';
 }
 function renderInv(){
   gid('invGold').innerHTML=coinImg()+' Vàng: '+P.gold;
