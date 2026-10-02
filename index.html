@@ -370,7 +370,7 @@
     </div>
   </div>
   <div id="setPanel">
-    <div class="panel">
+    <div class="panel"><button class="xClose" onclick="closeSet()" title="Đóng">✕</button>
       <h3>⚙ CÀI ĐẶT</h3>
       <div id="setBody"></div>
       <button id="setClose">Đóng (Esc)</button>
@@ -1938,7 +1938,7 @@ function drawSeasonFx(){
 }
 function genLobby(){
   mode='lobby';musicStart(4);
-  if(SAVE&&!SAVE.tut)tutOpen=true;
+  if(SAVE&&!SAVE.tut){tutOpen=true;tutStep=0;}
   map=[];for(let y=0;y<MH;y++){map.push(new Array(MW).fill(0));}
   rooms=[];decors=[];lights=[];
   for(let y=2;y<MH-2;y++)for(let x=2;x<MW-2;x++)map[y][x]=1;
@@ -3305,7 +3305,7 @@ function renderSet(){
   '<div class="row"><div class="info"><b>\u{1F338} Mùa trong sảnh</b><span class="sub">hiện tại: '+SEASON_INFO[curSeason()].icon+' '+SEASON_INFO[curSeason()].name+'</span></div><div>'+Object.keys(SEASON_INFO).map(function(k){return '<button style="margin:2px;'+(curSeason()===k?'border:2px solid #e8c15a':'')+'" onclick="setSeason(\''+k+'\')">'+SEASON_INFO[k].icon+'</button>';}).join('')+'</div></div>'+
   '<div class="row"><div class="info"><b>\u{1F4BE} Sao lưu tài khoản</b><span class="sub">xuất file save để mang sang bản game mới</span></div><button onclick="exportSave()">Xuất file</button></div>'+
   '<div class="row"><div class="info"><b>\u2601\uFE0F Đồng bộ đám mây</b><span class="sub">TỰ ĐỘNG — tài khoản lưu trên máy chủ công cộng, đăng nhập ở máy/link nào cũng chơi tiếp được, không cần cài đặt gì. Mật khẩu được băm trước khi gửi, đừng dùng lại mật khẩu quan trọng.</span><div class="sub" id="cloudMsg" style="margin-top:4px"></div></div><button onclick="testCloud()">Kiểm tra</button></div>'+
-  '<div class="row"><div class="info"><b>\u{1F4D6} Hướng dẫn tân thủ</b><span class="sub">xem lại bảng hướng dẫn điều khiển</span></div><button onclick="tutOpen=true;closeSet();">Xem lại</button></div>'+
+  '<div class="row"><div class="info"><b>\u{1F4D6} Hướng dẫn tân thủ</b><span class="sub">xem lại hướng dẫn từng bước cho người mới</span></div><button onclick="tutStep=0;tutOpen=true;closeSet();">Xem lại</button></div>'+
   '<div class="row"><div class="info"><span class="sub">\u{1F3B5} Nhạc nền: Kevin MacLeod (incompetech.com), CC BY 4.0 — Village Consort / Crypto / Dangerous / Five Armies</span></div></div>'+
   '<div class="row"><div class="info"><b>\u{1F5D1} Xóa tiến trình</b><span class="sub">xóa vàng, đồ đạc, nhiệm vụ, nguyên tố đã thức tỉnh</span></div><button class="danger" onclick="wipeSave()">Xóa save</button></div>';
 }
@@ -4529,33 +4529,51 @@ function render(){
   if(mode==='win'){if(awkIntroT>0)drawAwkIntro();else drawWin();}
  drawTouch();   if(tutOpen)drawTut();}
 function closeTut(){tutOpen=false;if(SAVE){SAVE.tut=true;persist();}sfx('ui');}
-function drawTut(){
-  ctx.fillStyle='rgba(0,0,0,0.72)';ctx.fillRect(0,0,W,H);
-  const pw=600,ph=400,px=W/2-pw/2,py=H/2-ph/2;
-  ctx.fillStyle='#151a26';ctx.fillRect(px,py,pw,ph);
-  ctx.strokeStyle='#e8c15a';ctx.lineWidth=3;ctx.strokeRect(px,py,pw,ph);
-  ctx.fillStyle='#e8c15a';ctx.font='bold 20px Arial';ctx.textAlign='center';
-  ctx.fillText('CHÀO MỪNG ĐẾN LÀNG CHÂN THÁP',W/2,py+42);
-  ctx.fillStyle='#c9cddc';ctx.font='14px Arial';ctx.textAlign='left';
+let tutStep=0;
+const TUT_STEPS=[
+{t:'CHÀO MỪNG TÂN THỦ!',L:['Chào mừng đến Làng Chân Tháp, tân thủ!','Trước mặt bạn là Tháp Nguyền 100 tầng —','nơi Vua Chuột và bầy quái đang chờ.','Mục tiêu: leo càng cao, càng mạnh!','Đi theo vài bước sau để làm quen nhé.']},
+{t:'DI CHUYỂN & CHIẾN ĐẤU',L:[]},
+{t:'DÂN LÀNG & NPC',L:['Thợ Rèn: mua / bán vũ khí, giáp, vé quay','Nhà Buôn: 3 món cũ → đổi 1 món xịn hơn','Thầy Thuốc: hồi máu, mua thuốc mang theo','Bảng Nhiệm Vụ: làm nhiệm vụ lấy thưởng','Vòng Quay: dùng vé quay trúng đồ hiếm','Đứng gần NPC rồi bấm F để nói chuyện!']},
+{t:'VÀO THÁP CHIẾN ĐẤU',L:['Đi vào CỔNG THÁP ở giữa làng để bắt đầu.','Đánh quái rơi vàng, thuốc và trang bị.','Thấy rương gỗ / rương vàng: bấm F để mở!','Vùng sáng xanh lá: đứng yên để hồi máu.','Mỗi 10 tầng có BOSS — chuẩn bị kỹ nhé!']},
+{t:'CHIÊU THỨC & SINH TỒN',L:[]},
+{t:'THỨC TỈNH NGUYÊN TỐ',L:['Thắng boss tầng 20: THỨC TỈNH nguyên tố!','Nhận 1 trong 17 nguyên tố + chiêu mới.','Đồ nguyên tố chỉ mặc được khi đã thức tỉnh','đúng nguyên tố đó — coi chừng nhé!','Tầng 100: Hắc Ám Vua Chuột Tối Thượng...']},
+{t:'SẴN SÀNG LÊN ĐƯỜNG!',L:['Bạn đã nắm hết những điều cơ bản!','Mẹo tân thủ: làm nhiệm vụ để kiếm vàng,','đừng quên cường hóa vũ khí ở Thợ Rèn.','Chúc may mắn, tân thủ —','hẹn gặp ở đỉnh Tháp Nguyền!']}
+];
+function tutFillControls(){
   const mv=IS_TOUCH?'Joystick trái (giữ & kéo)':'WASD / phím mũi tên';
   const atk=IS_TOUCH?'Nút ĐÁNH (tự ngắm quái gần nhất)':'Click chuột trái';
   const sk=IS_TOUCH?'Nút Q / E':'Phím Q / E';
   const tk=IS_TOUCH?'Nút F khi đứng gần NPC':'Phím F khi đứng gần NPC';
   const bg=IS_TOUCH?'Nút TÚI':'Phím I';
-  const L=['Di chuyển: '+mv,
-   'Đánh thường: '+atk,
-   'Tung chiêu: '+sk+' (mỗi tộc 2 chiêu riêng)',
-   'Nói chuyện, mua bán: '+tk,
-   'Túi đồ: '+bg+'   |   Nhạc: phím M',
-   'Vào CỔNG THÁP khi sẵn sàng!',
-   'Chết sẽ về lại sảnh, GIỮ NGUYÊN đồ đạc.'];
-  for(let i=0;i<L.length;i++)ctx.fillText(L[i],px+44,py+84+i*30);
-  buttons.push({x:W/2-90,y:py+ph-66,w:180,h:44,fn:closeTut});
-  ctx.fillStyle='#2c6e35';ctx.fillRect(W/2-90,py+ph-66,180,44);
-  ctx.strokeStyle='#7dff9d';ctx.lineWidth=2;ctx.strokeRect(W/2-90,py+ph-66,180,44);
-  ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.textAlign='center';
-  ctx.fillText('BẮT ĐẦU CHƠI',W/2,py+ph-38);
+  TUT_STEPS[1].L=['Di chuyển: '+mv,'Đánh thường: '+atk,'Tung chiêu: '+sk+' (mỗi tộc 2 chiêu riêng)','Nói chuyện, mua bán: '+tk,'Túi đồ: '+bg+'   |   Nhạc: phím M'];
+  TUT_STEPS[4].L=['Q / E: tung 2 chiêu đặc trưng của tộc bạn.','Thuốc dùng bằng phím 1-6 (mua ở Thầy Thuốc).','Máu cạn? Đừng lo — bạn về lại sảnh,','giữ nguyên toàn bộ đồ đạc và vàng!','Mở Túi (I) để mặc đồ mới nhặt được.'];
+}
+function drawTut(){
+  if(!TUT_STEPS[1].L.length)tutFillControls();
+  const n=TUT_STEPS.length,st=TUT_STEPS[tutStep];
+  ctx.fillStyle='rgba(0,0,0,0.72)';ctx.fillRect(0,0,W,H);
+  const pw=Math.min(620,W-36),ph=Math.min(440,H-36),px=W/2-pw/2,py=H/2-ph/2;
+  ctx.fillStyle='#151a26';ctx.fillRect(px,py,pw,ph);
+  ctx.strokeStyle='#e8c15a';ctx.lineWidth=3;ctx.strokeRect(px,py,pw,ph);
+  ctx.fillStyle='#e8c15a';ctx.font='bold 20px Arial';ctx.textAlign='center';
+  ctx.fillText(st.t,W/2,py+44);
+  ctx.fillStyle='#8a8fa3';ctx.font='13px Arial';
+  let dots='';for(let i=0;i<n;i++)dots+=(i===tutStep?'● ':'○ ');
+  ctx.fillText(dots+'  '+(tutStep+1)+'/'+n,W/2,py+68);
+  ctx.fillStyle='#c9cddc';ctx.font='15px Arial';ctx.textAlign='left';
+  for(let i=0;i<st.L.length;i++)ctx.fillText(st.L[i],px+44,py+110+i*32);
   ctx.textAlign='left';
+  function tBtn(x,w,label,fn,fill,stroke){
+    buttons.push({x:x,y:py+ph-62,w:w,h:42,fn:fn});
+    ctx.fillStyle=fill;ctx.fillRect(x,py+ph-62,w,42);
+    ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(x,py+ph-62,w,42);
+    ctx.fillStyle='#fff';ctx.font='bold 15px Arial';ctx.textAlign='center';
+    ctx.fillText(label,x+w/2,py+ph-35);ctx.textAlign='left';
+  }
+  tBtn(px+22,96,'Bỏ qua',closeTut,'#3a2030','#a05a6a');
+  if(tutStep>0)tBtn(W/2-58,110,'← Quay lại',function(){tutStep--;sfx('ui');},'#2a2f45','#4a5068');
+  const nx=tutStep<n-1;
+  tBtn(W/2+62,150,nx?'Tiếp theo →':'BẮT ĐẦU CHƠI',nx?function(){tutStep++;sfx('ui');}:closeTut,'#2c6e35','#7dff9d');
 }
 function drawVignette(){
   const vg=ctx.createRadialGradient(W/2,H/2,H*0.32,W/2,H/2,H*0.72);
