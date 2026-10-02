@@ -245,6 +245,62 @@
   #userBar{flex-wrap:wrap;gap:4px 10px;font-size:12px;line-height:1.6;max-width:100vw;padding:0 6px}
   #userBar button{padding:3px 8px;font-size:11px}
 }
+.xClose{position:absolute;top:10px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(232,193,90,.65);background:rgba(20,24,36,.9);color:#ffd76a;font-size:17px;font-weight:bold;cursor:pointer;line-height:1;padding:0;z-index:50}.xClose:hover{background:#e8c15a;color:#14141d}
+/* === Gacha UI v2 === */
+.gachaInfo{background:#1c2233;border:1px solid #2a3048;border-radius:10px;padding:10px 12px;margin:8px 0;text-align:left}
+.giTicket{display:flex;align-items:center;justify-content:space-between;gap:8px;border-color:#e8c15a!important;flex-wrap:wrap}
+.giTicketN{font-size:15px;color:#ffd76a;white-space:nowrap}
+.gachaTabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.gachaTabs button{background:#1c2233;border:1px solid #2a3048;color:#dfe3f0;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+.gachaTabs button.on{border-color:#e8c15a;color:#ffd76a;background:#2a2f45;font-weight:bold}
+.giHead{font-size:15px;font-weight:bold;color:#ffd76a;margin-bottom:8px}
+.giRates{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.giRates .rt{background:#12141d;border:1px solid #2a3048;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:bold}
+.giPityTxt{font-size:12px;color:#ff9a2a;margin-bottom:5px}
+.giBar{height:9px;background:#0d0f18;border-radius:5px;overflow:hidden;border:1px solid #2a3048}
+.giFill{height:100%;background:linear-gradient(90deg,#ff9a2a,#ffd76a);border-radius:5px;transition:width .4s}
+.gachaRollRow{display:flex;gap:10px;justify-content:center;margin:12px 0;flex-wrap:wrap}
+.gachaRollBtn{background:linear-gradient(180deg,#ffe08a,#e8c15a)!important;color:#14141d!important;font-size:16px!important;font-weight:900!important;padding:13px 28px!important;border-radius:12px!important;border:none!important;cursor:pointer;box-shadow:0 4px 14px rgba(232,193,90,.35)}
+.gachaRollBtn:disabled{filter:grayscale(.8);opacity:.45;box-shadow:none;cursor:not-allowed}
+.gachaRollBtn .sub2{font-size:11px;font-weight:normal;opacity:.75}
+.gachaResBar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
+.gachaResHead b{color:#ffd76a;font-size:14px}
+.gachaResHead .sub{display:block;color:#8a8fa3;font-size:11px;margin-top:2px}
+#gachaSkip{background:#2a2f45;border:1px solid #4a5068;color:#dfe3f0;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap}
+.gachaGrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin:10px 0 6px}
+.gcard{width:auto!important;min-width:0}
+.gachaTally{text-align:center;margin-top:10px;position:relative;z-index:1;font-size:13px;color:#dfe3f0}
+.gachaFoot{opacity:0;transition:opacity .6s;text-align:center;color:#8a8fa3;font-size:12px;margin-top:8px}
+
+/* === NPC panels cleanup v2 === */
+.shopGear{background:#1c2233;border:1px solid #e8c15a;border-radius:10px;padding:8px 12px;margin:8px 0;text-align:left}
+.sgT{font-size:11px;color:#8a8fa3;letter-spacing:1px;margin-bottom:4px}
+.sgRow{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:#dfe3f0}
+.tradeInfo{background:#1c2233;border:1px solid #e8c15a;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;color:#dfe3f0;text-align:left;line-height:1.6}
+.tradeRow{cursor:pointer}
+.tradeRow.sel{border-color:#e8c15a;background:#2a2f45}
+.tradeCk{font-size:20px;flex-shrink:0}
+.tradeGo{display:flex;justify-content:center;margin:12px 0}
+.tradeGoBtn{background:linear-gradient(180deg,#ffe08a,#e8c15a)!important;color:#14141d!important;font-size:15px!important;font-weight:900!important;padding:12px 30px!important;border-radius:12px!important;border:none!important;cursor:pointer;box-shadow:0 4px 14px rgba(232,193,90,.35)}
+.tradeGoBtn:disabled{filter:grayscale(.8);opacity:.45;box-shadow:none;cursor:not-allowed}
+.questRow .qprog{color:#9aa4c4;font-size:12px}
+.questRow.qCan{border-color:#e8c15a;box-shadow:0 0 12px rgba(232,193,90,.25)}
+.questRow.qDone{opacity:.75}
+.questRow.qLock{opacity:.6}
+.qBadge{font-size:11px;padding:3px 8px;border-radius:12px;white-space:nowrap}
+.qBadge.done{background:#1d2b1d;color:#7dff9d}
+.qBadge.lock{background:#1c2233;color:#8a8fa3;border:1px solid #2a3048}
+.qBadge.todo{background:#1c2233;color:#8a8fa3;border:1px solid #2a3048}
+.qBadge.can{background:#e8c15a;color:#14141d;font-weight:bold;animation:qPulse 1.2s infinite}
+@keyframes qPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.qClaimBtn{background:linear-gradient(180deg,#ffe08a,#e8c15a)!important;color:#14141d!important;font-weight:900!important;padding:9px 16px!important;border-radius:10px!important;border:none!important;white-space:nowrap}
+
+.healBox{background:#1c2233;border:1px solid #2a3048;border-radius:10px;padding:12px;margin:8px 0;text-align:left}
+.healTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:14px}
+.hpTxt{color:#7dff9d;font-size:12px}
+.hpBar{height:10px;background:#0d0f18;border-radius:5px;overflow:hidden;border:1px solid #2a3048;margin-bottom:10px}
+.hpFill{height:100%;background:linear-gradient(90deg,#3ddc74,#7dff9d);border-radius:5px;transition:width .3s}
+.healBtn{background:linear-gradient(180deg,#8ff5b0,#3ddc74)!important;color:#0d2818!important;font-weight:900!important;padding:10px 22px!important;border-radius:10px!important;border:none!important;cursor:pointer;font-size:14px!important}
 </style>
 <!-- Nhac nen: Kevin MacLeod (incompetech.com) - CC BY 4.0: 'Village Consort' (lang), 'Crypto' + 'Dangerous' (ham nguc), 'Five Armies' (boss) -->
 </head>
@@ -296,7 +352,7 @@
     </div>
   </div>
   <div id="npcPanel">
-    <div class="panel">
+    <div class="panel"><button class="xClose" onclick="closePanel()" title="Đóng">✕</button>
       <h3 id="npcTitle"></h3>
       <div class="gold" id="npcGold"></div>
       <div id="npcBody"></div>
@@ -305,7 +361,7 @@
     </div>
   </div>
   <div id="invPanel">
-    <div class="panel">
+    <div class="panel"><button class="xClose" onclick="closeInv()" title="Đóng">✕</button>
       <h3>🎒 Túi đồ</h3>
       <div class="gold" id="invGold"></div>
       <div id="invBody"></div>
@@ -321,14 +377,14 @@
     </div>
   </div>
   <div id="charPanel">
-    <div class="panel">
+    <div class="panel"><button class="xClose" onclick="closeChar()" title="Đóng">✕</button>
       <h3>👤 THÔNG TIN NHÂN VẬT</h3>
       <div id="charBody"></div>
       <button id="charClose">Đóng (Esc)</button>
     </div>
   </div>
   <div id="gatePanel">
-    <div class="panel">
+    <div class="panel"><button class="xClose" onclick="closeGatePanel()" title="Đóng">✕</button>
       <h3>🌀 CỔNG THÁP</h3>
       <div id="gateBody"></div>
       <button id="gateClose">Đóng</button>
@@ -350,6 +406,9 @@ window.addEventListener('error',function(e){
 });
 </script>
 <script>
+
+
+
 
 
 
@@ -2245,7 +2304,7 @@ function renderUpgradeSection(){
 function renderShop(){
   gid('npcTitle').textContent='⚒ Thợ Rèn — Mua bán';
   npcGold();npcMsg('');
-  let h='<div class="row" style="border-color:#e8c15a"><div class="info"><b>Đang dùng:</b> <span class="sub">'+itImg(P.weapon.name)+' '+P.weapon.name+' • '+itImg(P.armorItem.name)+' '+P.armorItem.name+' • '+itImg(P.ring.name)+' '+P.ring.name+'</span></div></div>';
+  let h='<div class="shopGear"><div class="sgT">ĐANG TRANG BỊ</div><div class="sgRow"><span>⚔ '+P.weapon.name+'</span><span>🛡 '+P.armorItem.name+'</span><span>💍 '+P.ring.name+'</span></div></div>';
   h+=renderUpgradeSection();
   h+='<h4>MUA GIÁP</h4>';
   for(let t=0;t<4;t++){
@@ -2255,7 +2314,7 @@ function renderShop(){
   h+='<h4>MUA VŨ KHÍ</h4>';
   for(let t=0;t<4;t++){
     const w=WEAPONS[t],pr=SHOP_WPRICE[t];
-    h+='<div class="row"><div class="info">'+iconImg('weapon',t)+'<b>'+w.name+'</b> <span class="sub">+'+Math.round((w.dmg-1)*100)+'% ST • '+Math.round(w.crit*100)+'% chí mạng — <b style="color:#e8c15a">'+pr+' vàng</b></span></div><span><button onclick="openShopDetail(\'bw\','+t+')" title="Xem chi tiết">🔍</button><button onclick="shopBuy(\'weapon\','+t+')">Mua</button></span></div>';
+    h+='<div class="row"><div class="info">'+iconImg('weapon',t)+'<b>'+w.name+'</b> <span class="sub">+'+Math.round((w.dmg-1)*100)+'% ST • '+Math.round(w.crit*100)+'% chí mạng</span></div><span><button onclick="openShopDetail(\'bw\','+t+')" title="Xem chi tiết">🔍</button><button '+(P.gold<pr?'disabled':'')+' onclick="shopBuy(\'weapon\','+t+')">Mua • '+pr+' vàng</button></span></div>';
   }
   h+='<h4>MUA NHẪN</h4>';
   for(let t=0;t<4;t++){
@@ -2337,19 +2396,19 @@ function shopEquip(kind,idx){
 }
 function renderTrade(){
   gid('npcTitle').textContent='🧳 Nhà Buôn — Trao đổi';
-  npcGold();
-  npcMsg('Chọn 3 món trong túi để đổi lấy 1 món ngẫu nhiên XỊN HƠN (cấp cao nhất trong 3 món +1, tối đa cấp 4)');
+  npcGold();npcMsg('');
+  let h='<div class="tradeInfo">🔄 Chọn <b>3 món</b> trong túi để đổi lấy <b>1 món ngẫu nhiên XỊN HƠN</b><br><span class="sub">Cấp món mới = cấp cao nhất trong 3 món +1 (tối đa cấp 4)</span></div>';
   const all=[];
   P.inv.weapons.forEach((t,i)=>all.push({kind:'weapon',idx:i,tier:t,name:'⚔ '+WEAPONS[t].name}));
   P.inv.armors.forEach((t,i)=>all.push({kind:'armor',idx:i,tier:t,name:'🛡 '+ARMORS[t].name}));
   window._tradeAll=all;
-  let h='<h4>TÚI ĐỒ CỦA BẠN</h4>';
+  h+='<h4>TÚI ĐỒ CỦA BẠN</h4>';
   if(!all.length)h+='<div class="row"><div class="info"><span class="sub">Túi trống — vào tháp đánh quái nhặt đồ thừa rồi quay lại!</span></div></div>';
   all.forEach((it,k)=>{
     const sel=tradeSel.some(s=>s.k===k);
-    h+='<div class="row'+(sel?' sel':'')+'"><div class="info">'+iconImg(it.kind,it.tier)+'<b>'+it.name+'</b> <span class="sub">cấp '+(it.tier+1)+'/4</span></div><button onclick="tradeToggle('+k+')">'+(sel?'Bỏ chọn':'Chọn')+'</button></div>';
+    h+='<div class="row tradeRow'+(sel?' sel':'')+'" onclick="tradeToggle('+k+')"><div class="info">'+iconImg(it.kind,it.tier)+'<b>'+it.name+'</b> <span class="sub">cấp '+(it.tier+1)+'/4</span></div><span class="tradeCk">'+(sel?'☑️':'☐')+'</span></div>';
   });
-  h+='<div class="row" style="justify-content:center"><button style="padding:10px 30px;font-size:14px" '+(tradeSel.length!==3?'disabled':'')+' onclick="doTrade()">TRAO ĐỔI 3 → 1 ('+tradeSel.length+'/3)</button></div>';
+  h+='<div class="tradeGo"><button class="tradeGoBtn" '+(tradeSel.length!==3?'disabled':'')+' onclick="doTrade()">🔄 TRAO ĐỔI 3 → 1 ('+tradeSel.length+'/3)</button></div>';
   gid('npcBody').innerHTML=h;
 }
 function tradeToggle(k){
@@ -2835,15 +2894,16 @@ function renderGacha(resHtml){
   gid('npcTitle').textContent='\u{1F3A1} V\u00F2ng Quay May M\u1EAFn';
   npcGold();npcMsg('');
   const st=gachaState(),b=GACHA_BANNERS[gachaBanner];
-  let h='<div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F39F} V\u00E9 quay: '+st.tickets+'</b> <span class="sub">Mua v\u00E9 \u1EDF Th\u1EE3 R\u00E8n (180 v\u00E0ng/v\u00E9) \u2022 R\u01B0\u01A1ng v\u00E0ng trong th\u00E1p c\u0169ng r\u01A1i v\u00E9</span></div></div>';
-  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">';
+  const pity=st.pity[gachaBanner]||0,pityLeft=GACHA_PITY_MAX-pity,pityPct=Math.min(100,Math.round(pity/GACHA_PITY_MAX*100));
+  let h='<div class="gachaInfo giTicket"><span class="giTicketN">\u{1F39F} V\u00E9 quay: <b>'+st.tickets+'</b></span><span class="sub">Mua v\u00E9 \u1EDF Th\u1EE3 R\u00E8n (180 v\u00E0ng/v\u00E9) \u2022 R\u01B0\u01A1ng v\u00E0ng trong th\u00E1p c\u0169ng r\u01A1i v\u00E9</span></div>';
+  h+='<div class="gachaTabs">';
   for(const k in GACHA_BANNERS){const bb=GACHA_BANNERS[k];
-    h+='<button onclick="gachaBanner=\''+k+'\';renderGacha()" style="'+(k===gachaBanner?'border-color:#e8c15a;color:#ffd76a':'')+'">'+bb.icon+' '+bb.name+'</button>';}
+    h+='<button onclick="gachaBanner=\''+k+'\';renderGacha()" class="'+(k===gachaBanner?'on':'')+'">'+bb.icon+' '+bb.name+'</button>';}
   h+='</div>';
-  const pityLeft=GACHA_PITY_MAX-st.pity[gachaBanner];
-  h+='<h4>'+b.icon+' '+b.name+' <span class="sub">\u2014 '+b.sub+'</span></h4>';
-  h+='<div class="row"><div class="info"><span class="sub">T\u1EC9 l\u1EC7: \u{1F535} 78% \u2022 \u{1F7E3} 19% \u2022 \u{1F7E0} 3% \u2014 quay \u0111\u1EE7 <b style="color:#ff9a2a">'+GACHA_PITY_MAX+' l\u01B0\u1EE3t</b> ch\u1EAFc ch\u1EAFn ra \u0111\u1ED3 CAM</span><br><span class="sub" style="color:#ff9a2a">\u{1F6E1} B\u1EA3o hi\u1EC3m: c\u00F2n '+pityLeft+' l\u01B0\u1EE3t ch\u1EAFc ch\u1EAFn ra CAM</span></div></div>';
-  h+='<div class="row"><div class="info"><b>\u{1F3AF} Quay banner n\u00E0y</b></div><span><button '+(st.tickets<1?'disabled':'')+' onclick="gachaRoll(1)">QUAY x1 (1 v\u00E9)</button> <button '+(st.tickets<10?'disabled':'')+' onclick="gachaRoll(10)">QUAY x10 (10 v\u00E9)</button></span></div>';
+  h+='<div class="gachaInfo"><div class="giHead">'+b.icon+' '+b.name+' <span class="sub">\u2014 '+b.sub+'</span></div>'
+    +'<div class="giRates"><span class="rt" style="color:#5a9adf">\u{1F535} Th\u01B0\u1EDDng 78%</span><span class="rt" style="color:#c77dff">\u{1F7E3} C\u1EF1c ph\u1EA9m 19%</span><span class="rt" style="color:#ff9a2a">\u{1F7E0} Huy\u1EC1n tho\u1EA1i 3%</span></div>'
+    +'<div class="giPity"><div class="giPityTxt">\u{1F6E1} B\u1EA3o hi\u1EC3m: c\u00F2n <b>'+pityLeft+'</b> l\u01B0\u1EE3t ch\u1EAFc ch\u1EAFn ra \u0111\u1ED3 CAM</div><div class="giBar"><div class="giFill" style="width:'+pityPct+'%"></div></div></div></div>';
+  h+='<div class="gachaRollRow"><button class="gachaRollBtn" '+(st.tickets<1?'disabled':'')+' onclick="gachaRoll(1)">\u{1F3AF} QUAY x1 <span class="sub2">(1 v\u00E9)</span></button><button class="gachaRollBtn" '+(st.tickets<10?'disabled':'')+' onclick="gachaRoll(10)">\u{1F3AF} QUAY x10 <span class="sub2">(10 v\u00E9)</span></button></div>';
   h+='<div id="gachaResult">'+(resHtml||'')+'</div>';
   gid('npcBody').innerHTML=h;
 }
@@ -2925,7 +2985,7 @@ function showGachaCardG(c){
 function gachaFinish(n){
   const pulls=window._gachaPulls||[];
   addDmgNum(P.x,P.y-30,'TR\u00DANG TH\u01AF\u1EDENG!','#e8c15a',true);
-  let rh='<button id="gachaSkip" onclick="gachaSkip()">\u23E9 B\u1ECE QUA</button><div style="clear:both"></div><div class="row" style="border-color:#e8c15a"><div class="info"><b>\u{1F39F} K\u1EBFt qu\u1EA3 quay x'+n+':</b> <span class="sub">— b\u1EA5m v\u00E0o th\u1EBB \u00FAp \u0111\u1EC3 l\u1EADt ngay, b\u1EA5m th\u1EBB \u0111\u00E3 m\u1EDF \u0111\u1EC3 xem chi ti\u1EBFt</span></div><div class="gachaStage"><div class="gachaGrid">';
+  let rh='<div class="gachaResBar"><div class="gachaResHead"><b>\u{1F39F} K\u1EBFt qu\u1EA3 quay x'+n+'</b><span class="sub">B\u1EA5m th\u1EBB \u00FAp \u0111\u1EC3 l\u1EADt ngay \u2022 th\u1EBB \u0111\u00E3 m\u1EDF \u0111\u1EC3 xem chi ti\u1EBFt</span></div><button id="gachaSkip" onclick="gachaSkip()">\u23E9 B\u1ECE QUA</button></div><div class="gachaStage"><div class="gachaGrid">';
   for(let i=0;i<pulls.length;i++){
     const p=pulls[i];
     const img=weaponImgURL({name:p.it.name,elem:p.it.elem||null,kind:gachaBanner==='giap'?'armor':'weapon',tier:-1,sp:true});
@@ -2942,7 +3002,7 @@ function gachaFinish(n){
       +(p.it.elem?'<div class="gsub">['+p.it.elem+']</div>':'')
       +'</div></div>'+isNew+'</div>';
   }
-  rh+='</div><div id="gachaTally" class="sub" style="text-align:center;margin-top:8px;position:relative;z-index:1"></div></div><div id="gachaFoot" class="sub" style="opacity:0;transition:opacity 0.6s">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
+  rh+='</div><div id="gachaTally" class="gachaTally"></div></div><div id="gachaFoot" class="gachaFoot">\u0110\u1ED3 \u0111\u00E3 v\u00E0o t\u00FAi \u2014 m\u1EDF t\u00FAi (ph\u00EDm I) \u0111\u1EC3 trang b\u1ECB. B\u1EA3o hi\u1EC3m: c\u00F2n '+(GACHA_PITY_MAX-gachaState().pity[gachaBanner])+' l\u01B0\u1EE3t.</div></div>';
   renderGacha(rh);
   const seq=++gachaSeq;seqG=seq;
   const cards=document.querySelectorAll('#gachaResult .gcard');
@@ -3023,7 +3083,7 @@ function renderHeal(){
   gid('npcTitle').textContent='🌿 Thầy Thuốc';
   npcGold();npcMsg('');
   gid('npcBody').innerHTML=
-    '<div class="row"><div class="info"><b>Hồi đầy HP</b> <span class="sub">50 vàng — HP hiện tại '+Math.ceil(P.hp)+'/'+P.maxhp+'</span></div><button onclick="doHeal()">Hồi máu</button></div>'+
+    '<div class="healBox"><div class="healTop"><b>\u{1F49A} Hồi đầy HP</b><span class="hpTxt">'+Math.ceil(P.hp)+'/'+P.maxhp+'</span></div><div class="hpBar"><div class="hpFill" style="width:'+Math.round(P.hp/P.maxhp*100)+'%"></div></div><button class="healBtn" onclick="doHeal()">Hồi máu \u2022 50 vàng</button></div>'+
     '<h4 style="margin:10px 0 4px;color:#e8c15a">CỬA HÀNG THUỐC</h4>'+
     POTIONS.map(function(pt,i){return '<div class="row"><div class="info"><b>'+potImg(pt)+' '+pt.name+'</b> <span class="sub">'+pt.desc+' — <b style="color:#e8c15a">'+pt.price+' vàng</b> (đang có: '+(SAVE.potions[pt.id]||0)+')</span></div><button onclick="buyPotion(\''+pt.id+'\')">Mua ['+(i+1)+']</button></div>';}).join('')+
     '<div class="row"><div class="info"><span class="sub">Mẹo: giết quái nhặt vàng, ghé Thợ Rèn mua đồ, đồ thừa mang cho Nhà Buôn đổi đồ xịn hơn!</span></div></div>';
@@ -3101,12 +3161,12 @@ function renderQuest(){
   let h='<h4>NHIỆM VỤ — TUYẾN CỐT TRUYỆN (tiến trình tự động lưu)</h4>';
   QUESTS.forEach(function(q,i){
     const claimed=SAVE.claimed[q.id],dn=q.done(),un=qUnlocked(q);
-    let btn='';
-    if(claimed)btn='<span class="sub">✅ Đã nhận</span>';
-    else if(!un)btn='<span class="sub">🔒 '+(q.need.map(qShortName).join(' + '))+'</span>';
-    else if(dn)btn='<button onclick="claimQuest('+i+')">Nhận thưởng</button>';
-    else btn='<span class="sub">Chưa xong</span>';
-    h+='<div class="row"><div class="info"><b>'+q.name+'</b> <span class="sub">'+q.desc+'</span><br><span class="sub" style="color:#9aa4c4;font-style:italic">📖 '+q.story+'</span><br><span class="sub">Tiến trình: '+q.prog()+' • Thưởng: '+q.rw.rwText+'</span></div><span>'+btn+'</span></div>';
+    let btn='',cls='',badge='';
+    if(claimed){btn='<span class="qBadge done">✅ Đã nhận</span>';cls='qDone';}
+    else if(!un){btn='<span class="qBadge lock">🔒 '+(q.need.map(qShortName).join(' + '))+'</span>';cls='qLock';}
+    else if(dn){btn='<button class="qClaimBtn" onclick="claimQuest('+i+')">🎁 Nhận thưởng</button>';cls='qCan';badge='<span class="qBadge can">SẴN SÀNG</span>';}
+    else{btn='<span class="qBadge todo">⏳ Chưa xong</span>';}
+    h+='<div class="row questRow '+cls+'"><div class="info"><b>'+q.name+'</b> '+badge+'<br><span class="sub">'+q.desc+'</span><br><span class="qprog">📊 '+q.prog()+' &nbsp;•&nbsp; 🎁 '+q.rw.rwText+'</span><br><span class="sub" style="color:#9aa4c4;font-style:italic">📖 '+q.story+'</span></div><span>'+btn+'</span></div>';
   });
   gid('npcBody').innerHTML=h;
 }
